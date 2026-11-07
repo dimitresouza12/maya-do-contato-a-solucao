@@ -1,4 +1,9 @@
 portal,pedido_ref,data_hora_evento,status,local,previsao_entrega,codigo_rastreio
+Correio Ágil,GBH359418,2026-07-21 08:23:00,coletado,CD2,2026-07-30,CA620125141BR
+Correio Ágil,GBH359418,2026-07-22 05:52:00,em_transferencia,centro de distribuição da transportadora,2026-07-30,CA620125141BR
+Correio Ágil,GBH359418,2026-07-28 02:03:00,chegada_unidade_destino,unidade TO,2026-07-30,CA620125141BR
+Correio Ágil,GBH359418,2026-07-30 05:35:00,saiu_para_entrega,unidade TO,2026-07-30,CA620125141BR
+Correio Ágil,GBH359418,2026-07-30 09:56:00,entregue,destino TO,2026-07-30,CA620125141BR
 Correio Ágil,GBH363467,2026-07-24 23:03:00,coletado,CD1,2026-07-31,CA382226673BR
 Correio Ágil,GBH363467,2026-07-26 03:35:00,em_transferencia,centro de distribuição da transportadora,2026-07-31,CA382226673BR
 Correio Ágil,GBH363467,2026-08-08 21:11:00,chegada_unidade_destino,unidade MT,2026-07-31,CA382226673BR

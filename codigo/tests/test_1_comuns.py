@@ -211,3 +211,57 @@ def test_pii_comum_e_mascarada():
 def test_atendente_nao_usa_ferramenta_de_supervisor():
     with pytest.raises(SemPermissao):
         Ferramentas("atendente", "gocolega", AGORA).decidir_suspeita("AT1", "improcedente", "x", "outro")
+
+
+# ---------- tom: acolhimento ----------
+
+def test_retribui_o_cumprimento_chama_pelo_nome_e_acolhe():
+    from gocolega import tom
+    ab = tom.abertura("Boa tarde! Meu pedido veio amassado. Obrigada, Fernanda", "Avaria")
+    assert ab.startswith("Boa tarde, Fernanda!") and "Sinto muito pelo ocorrido" in ab
+
+
+def test_pergunta_se_esta_tudo_bem_e_respondida():
+    from gocolega import tom
+    assert "Tudo bem por aqui" in tom.abertura("Oi, tudo bem? Qual a validade do serum?", "Duvida")
+
+
+def test_reconhece_a_repeticao_a_urgencia_e_a_frustracao():
+    from gocolega import tom
+    assert tom.abertura("Já é a 2ª vez que entro em contato", "Atraso") in tom.VARIANTES["repeticao"]
+    assert tom.abertura("Preciso pra um presente de aniversário", "Atraso") in tom.VARIANTES["urgencia"]
+    assert tom.abertura("Que serviço maravilhoso 🙄 nota 10", "Atraso") in tom.VARIANTES["raiva"]
+
+
+def test_nao_inventa_nome_nem_empatia_para_pergunta_neutra():
+    from gocolega import tom
+    assert tom.nome_do_cliente("Obrigada. Meu pedido ainda nao chegou") is None   # "Meu" nao e nome
+    assert tom.abertura("Qual a validade do serum?", "Duvida") == ""
+
+
+def test_acolher_nao_duplica_quando_o_texto_ja_acolhe_e_nao_mexe_sem_a_mensagem_do_cliente():
+    from gocolega import tom
+    ja = "Sinto muito pelo ocorrido. Vamos reenviar."
+    assert tom.acolher("Boa tarde, veio quebrado", ja, "Avaria") == ja
+    assert tom.acolher(None, "Reenvio aprovado.", "Avaria") == "Reenvio aprovado."
+    r = tom.acolher("Bom dia! veio quebrado", "Reenvio aprovado.", "Avaria")
+    assert r.startswith("Bom dia! ") and r.endswith(" Reenvio aprovado.") and len(r) > len("Bom dia! Reenvio aprovado.")
+
+
+def test_resposta_enviada_ao_cliente_sai_acolhedora_pelo_responder_cliente():
+    from datetime import datetime
+    ferr = Ferramentas("atendente", "gocolega", datetime(2026, 9, 10))
+    ferr.cliente, ferr.categoria_conversa = "Bom dia, tudo bem? O frasco veio vazando. Att, Marina", "Avaria"
+    ferr.responder_cliente("AT1", "Para seguir com a solucao, envie uma foto do produto.")
+    t = ferr.log[-1]["texto"]
+    assert t.startswith("Bom dia, Marina! Tudo bem por aqui") and "Sinto muito" in t and t.endswith("envie uma foto do produto.")
+
+
+def test_o_redator_recebe_a_mensagem_do_cliente_como_dado_so_para_o_tom(monkeypatch):
+    from gocolega import agentes, llm
+    capturado = {}
+    monkeypatch.setattr(agentes, "disponivel", lambda: True)
+    monkeypatch.setattr(llm, "chat", lambda modelo, sistema, usuario, **k: capturado.update(s=sistema, u=usuario) or "Bom dia! Reenvio aprovado.")
+    agentes.redator_rascunho("informar o reenvio", "Reenvio aprovado.", cliente="Bom dia! veio quebrado. CPF 123.456.789-09")
+    assert "<mensagem_do_cliente>" in capturado["u"] and "123.456.789-09" not in capturado["u"]   # PII mascarada
+    assert "ACOLHA" in capturado["s"] and "so para o tom" in capturado["s"]

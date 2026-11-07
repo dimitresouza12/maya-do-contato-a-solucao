@@ -1,4 +1,5 @@
 conversation_id,customer_id,order_id,marca,canal,data_abertura,tag_agente,status,n_interacoes,atendente_id,data_primeira_resposta,data_encerramento,assunto,csat
+AT104736,CH855517,GBH359418,Barbour's,reclame_aqui,2026-08-05 08:20:14,Avaria,resolvido,4,atendente_09,2026-08-07 08:24:57,2026-08-07 09:17:04,Produto chegou danificado,
 AT105041,CH482518,GBH372359,Kokeshi,email,2026-08-07 12:47:00,Rastreio,resolvido,3,atendente_19,2026-08-08 08:38:46,2026-08-08 09:02:45,Meu pedido GBH372359,4
 AT105180,CH994783,GBH367391,Kokeshi,whatsapp,2026-08-08 17:57:05,Avaria,resolvido,7,atendente_12,2026-08-08 18:05:35,2026-08-08 19:06:39,,
 AT105718,CH468583,GBH363467,Yenzah,whatsapp,2026-08-12 12:40:23,Atraso,resolvido,6,atendente_19,2026-08-12 12:48:22,2026-08-12 13:24:30,,3

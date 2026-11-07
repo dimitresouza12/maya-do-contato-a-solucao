@@ -111,10 +111,11 @@ class AgenteRedator(Agente):
 
     def receber(self, msg, bus):
         c = msg.conteudo
+        cliente = c.get("cliente", "")
         if msg.ato == "redigir":
-            texto = agentes.redator_rascunho(c["situacao"], c["fatos"]) if agentes.disponivel() else None
+            texto = agentes.redator_rascunho(c["situacao"], c["fatos"], cliente=cliente) if agentes.disponivel() else None
         else:  # corrigir: o Verificador devolveu problemas concretos
-            texto = agentes.redator_rascunho(c["situacao"], c["fatos"], c["problemas"], c["texto"]) if agentes.disponivel() else None
+            texto = agentes.redator_rascunho(c["situacao"], c["fatos"], c["problemas"], c["texto"], cliente=cliente) if agentes.disponivel() else None
         return self.responder(msg, "rascunho", texto=texto or c["fallback"], origem="modelo" if texto else "texto fixo")
 
 
@@ -144,10 +145,11 @@ def montar(cid: str | None = None, oid: str | None = None, usar_juiz: bool = Fal
     return bus
 
 
-def redigir(bus: Barramento, situacao: str, fatos: str, fallback: str) -> str:
-    """Conversa Redator <-> Verificador: rascunho, critica concreta, revisao (ate MAX_REVISOES), senao texto fixo."""
+def redigir(bus: Barramento, situacao: str, fatos: str, fallback: str, cliente: str = "") -> str:
+    """Conversa Redator <-> Verificador: rascunho, critica concreta, revisao (ate MAX_REVISOES), senao texto fixo.
+    `cliente` e a mensagem do cliente, usada so para dar tom (acolhimento)."""
     # O conteudo vai INTEIRO ao agente; o recorte para leitura acontece so em Barramento.linhas().
-    m = bus.enviar("Orquestrador", "Redator", "redigir", situacao=situacao, fatos=fatos, fallback=fallback)
+    m = bus.enviar("Orquestrador", "Redator", "redigir", situacao=situacao, fatos=fatos, fallback=fallback, cliente=cliente)
     texto, origem = m.conteudo["texto"], m.conteudo["origem"]
     for rodada in range(MAX_REVISOES + 1):
         v = bus.enviar("Redator", "Verificador", "revisar", texto=texto, fatos=fatos, origem=origem)
@@ -157,6 +159,6 @@ def redigir(bus: Barramento, situacao: str, fatos: str, fallback: str) -> str:
             bus.transcricao.append(Mensagem("Verificador", "Orquestrador", "usar_texto_fixo", {"motivo": "revisoes esgotadas"}))
             return fallback
         m = bus.enviar("Verificador", "Redator", "corrigir", situacao=situacao, fatos=fatos, texto=texto,
-                       problemas=v.conteudo["problemas"], fallback=fallback)
+                       problemas=v.conteudo["problemas"], fallback=fallback, cliente=cliente)
         texto, origem = m.conteudo["texto"], m.conteudo["origem"]
     return fallback

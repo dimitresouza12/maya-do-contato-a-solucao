@@ -127,18 +127,18 @@ def test_suspeita_e_caso_sensivel_nunca_passam_pelo_redator(monkeypatch):
     r, ferr = tratar("AT108528")
     assert r.desfecho == "suspeita"
     resposta = next(e["texto"] for e in ferr.log if e["ferramenta"] == "responder_cliente")
-    assert resposta == orquestrador.RESPOSTA_NEUTRA
+    assert orquestrador.RESPOSTA_NEUTRA in resposta   # o texto fixo, com no maximo a abertura de acolhimento
 
 
-def test_confianca_baixa_e_discordancia_vai_para_uma_pessoa_sem_agir(cenario):
-    """Jev diz Avaria (43%), o modelo principal diz Rastreio: nada de reenvio, e uma pessoa e acionada."""
+def test_confianca_baixa_e_discordancia_pergunta_ao_cliente_sem_agir(cenario):
+    """Jev diz Avaria (43%), o modelo principal diz Rastreio: nada de reenvio e nada de chamar uma pessoa (DIARIO 36):
+    o agente pede mais detalhes ao cliente."""
     cenario(0.43, "Avaria", '{"categoria":"Rastreio"}')
     r, ferr = tratar("AT105180")
     feitas = [e["ferramenta"] for e in ferr.log]
-    assert r.desfecho == "escalado"
-    assert "reenviar_produto" not in feitas and "responder_cliente" not in feitas
-    ac = next(e for e in ferr.log if e["ferramenta"] == "acionar_pessoa")
-    assert "sem consenso" in ac["assunto"].lower() and "Avaria" in ac["contexto"] and "Rastreio" in ac["contexto"]
+    assert r.desfecho == "aguardando_cliente"
+    assert "reenviar_produto" not in feitas and "acionar_pessoa" not in feitas and feitas.count("responder_cliente") == 1
+    assert any("sem consenso" in p for p in r.passos)
 
 
 def test_rastreio_e_atraso_nao_exigem_consenso_exato(cenario):
@@ -155,7 +155,7 @@ def test_avaria_e_produto_faltando_divergem_porque_a_politica_e_outra(cenario):
     assert acao_de("Avaria") != acao_de("Produto faltando")
     cenario(0.50, "Avaria", '{"categoria":"Produto faltando"}')
     r, ferr = tratar("AT105180")
-    assert r.desfecho == "escalado" and not any(e["ferramenta"] == "reenviar_produto" for e in ferr.log)
+    assert r.desfecho == "aguardando_cliente" and not any(e["ferramenta"] == "reenviar_produto" for e in ferr.log)
 
 
 def _acoes(ferr):
@@ -406,8 +406,188 @@ def test_foto_ausente_de_exif_nao_e_sinal_de_fraude(base_completa):
         assert "foto_antes_da_entrega" not in nomes
 
 
-@pytest.mark.xfail(reason="LACUNA CONHECIDA: o GoColega ainda nao confere se o pedido tinha direito ao brinde "
-                          "(Mimo de Outubro: GoBeaute, compra >= R$ 129, de 13/10 a 04/11).", strict=False)
 def test_brinde_so_e_reenviado_se_o_pedido_tinha_direito():
-    from gocolega.orquestrador import elegivel_brinde  # ainda nao existe
-    assert elegivel_brinde({"marca": "Kokeshi", "valor_produtos": 100, "data_pedido": date(2026, 10, 20)}) is False
+    """Mimo de Outubro: GoBeaute, compra >= R$ 129, de 13/10 a 04/11 (politicas.csv, campanha_vigente)."""
+    from gocolega.orquestrador import elegivel_brinde
+    ok = {"marca": "Kokeshi", "valor_produtos": 150, "data_pedido": date(2026, 10, 20)}
+    assert elegivel_brinde(ok) is True
+    assert elegivel_brinde({**ok, "valor_produtos": 100}) is False          # abaixo de R$ 129
+    assert elegivel_brinde({**ok, "data_pedido": date(2026, 10, 1)}) is False   # antes da campanha
+    assert elegivel_brinde({**ok, "data_pedido": date(2026, 11, 5)}) is False   # depois da campanha
+    assert elegivel_brinde({**ok, "marca": "Gocase"}) is False               # so GoBeaute
+    assert elegivel_brinde({**ok, "valor_produtos": 129}) is True            # limite inclusivo
+
+
+def test_segundo_assunto_e_dividido():
+    from gocolega.orquestrador import _dividir
+    a, b = _dividir("O frasco do óleo chegou quebrado. Quero outro. Aproveitando, e não veio o brinde. Pedido GBH359418.")
+    assert "quebrado" in a and "brinde" not in a
+    assert b.startswith("não veio o brinde")
+    assert _dividir("Meu pedido chegou quebrado e quero outro, por favor, urgente.")[1] is None   # sem marcador
+    assert _dividir("Ah, e obrigado")[1] is None                                                    # pouco texto antes
+
+
+def test_desfecho_junto_e_o_pior_dos_dois():
+    from gocolega.orquestrador import Resultado, _juntar
+    a, b = Resultado("AT1", categoria="Avaria", desfecho="autonomo"), Resultado("AT1", categoria="Promocao", desfecho="escalado")
+    assert _juntar(a, b).desfecho == "escalado"
+    assert a.categoria == "Avaria + Promocao"
+
+
+def test_espera_diz_o_prazo_do_canal():
+    from gocolega.orquestrador import PRAZO_HUMANO, RESPOSTA_ESPERA_GERAL
+    assert "30 minutos" in RESPOSTA_ESPERA_GERAL.format(prazo=PRAZO_HUMANO["whatsapp"])
+    assert "24 horas" in RESPOSTA_ESPERA_GERAL.format(prazo=PRAZO_HUMANO["email"])
+    assert "48 horas" in RESPOSTA_ESPERA_GERAL.format(prazo=PRAZO_HUMANO["reclame_aqui"])
+
+
+def test_tom_varia_e_muda_com_o_canal():
+    from gocolega import tom
+    textos = {tom.abertura(f"Meu pedido atrasou, voltando a falar {i}", "Atraso") for i in range(12)}
+    assert len(textos) > 1                                                         # nao e sempre a mesma frase
+    assert tom.abertura("Bom dia, Att, Ana", "Atraso", "email").startswith("Bom dia, Ana.")   # e-mail: ponto
+    assert "lamentamos" in tom.abertura("Absurdo, que descaso", "Avaria", "reclame_aqui").lower()   # RA: institucional (1a pessoa do plural)
+    assert tom.abertura("Bom dia, Att, Ana", "Avaria", "whatsapp") == tom.abertura("Bom dia, Att, Ana", "Avaria", "whatsapp")  # deterministico
+
+
+# ---------- rotas do dia a dia: cancelamento, endereco, financeiro, cupom, troca, elogio ----------
+
+def _rota(monkeypatch=None):
+    from datetime import datetime
+    from gocolega import rotas_gerais
+    from gocolega.ferramentas import Ferramentas
+    from gocolega.orquestrador import Resultado
+    ferr = Ferramentas("atendente", "gocolega", datetime(2026, 9, 10, 10, 0))
+    escrever = lambda r, situacao, fatos, fallback: fallback
+    return rotas_gerais, ferr, Resultado("AT1"), escrever
+
+
+def _pedido(**kw):
+    from datetime import date, datetime
+    p = {"order_id": "GBH1", "marca": "Kokeshi", "valor": 80.0, "sku": "KSH-1", "personalizacao": None,
+         "data_separacao": datetime(2026, 9, 1, 9, 0), "data_entrega": date(2026, 9, 6)}
+    p.update(kw)
+    return p
+
+
+def test_cancelamento_antes_da_separacao_cancela_com_estorno_integral_sem_limite_de_valor():
+    rg, ferr, r, esc = _rota()
+    rg.cancelamento(r, ferr, "AT1", _pedido(data_separacao=None, data_entrega=None, valor=950.0), "quero cancelar", ferr.agora, esc)
+    assert r.desfecho == "autonomo" and [e["ferramenta"] for e in ferr.log][0] == "cancelar_pedido"
+
+
+def test_cancelamento_sem_pedido_claro_do_cliente_pergunta_em_vez_de_cancelar():
+    rg, ferr, r, esc = _rota()
+    rg.cancelamento(r, ferr, "AT1", _pedido(data_separacao=None, data_entrega=None), "meu pedido nao chegou, que demora", ferr.agora, esc)
+    assert r.desfecho == "aguardando_cliente" and "cancelar_pedido" not in [e["ferramenta"] for e in ferr.log]
+
+
+def test_arrependimento_depois_do_recebimento_dentro_de_7_dias_reembolsa_ate_100():
+    rg, ferr, r, esc = _rota()
+    rg.cancelamento(r, ferr, "AT1", _pedido(), "quero devolver, nao gostei", ferr.agora, esc)   # entregue 6 dias antes
+    assert r.desfecho == "autonomo" and ferr.log[0]["ferramenta"] == "reembolsar" and ferr.log[0]["valor"] == 80.0
+
+
+def test_arrependimento_acima_da_alcada_pede_aprovacao_em_vez_de_reembolsar():
+    rg, ferr, r, esc = _rota()
+    rg.cancelamento(r, ferr, "AT1", _pedido(valor=140.0), "quero devolver", ferr.agora, esc)
+    nomes = [e["ferramenta"] for e in ferr.log]
+    assert r.desfecho == "aguardando_supervisor" and "solicitar_aprovacao" in nomes and "reembolsar" not in nomes
+
+
+def test_arrependimento_depois_de_7_dias_e_negado_pela_politica():
+    from datetime import date
+    rg, ferr, r, esc = _rota()
+    rg.cancelamento(r, ferr, "AT1", _pedido(data_entrega=date(2026, 8, 25)), "quero devolver", ferr.agora, esc)
+    assert r.desfecho == "fora_da_politica" and "reembolsar" not in [e["ferramenta"] for e in ferr.log]
+
+
+def test_pedido_separado_e_a_caminho_nao_cancela_mas_explica_o_reembolso_apos_receber():
+    rg, ferr, r, esc = _rota()
+    rg.cancelamento(r, ferr, "AT1", _pedido(data_entrega=None), "quero cancelar", ferr.agora, esc)
+    assert r.desfecho == "autonomo" and "cancelar_pedido" not in [e["ferramenta"] for e in ferr.log]
+
+
+def test_endereco_antes_da_separacao_pede_o_endereco_completo_e_depois_nega():
+    rg, ferr, r, esc = _rota()
+    rg.endereco(r, ferr, "AT1", _pedido(data_separacao=None, data_entrega=None), ferr.agora, esc)
+    assert r.desfecho == "aguardando_cliente"
+    rg, ferr, r, esc = _rota()
+    rg.endereco(r, ferr, "AT1", _pedido(), ferr.agora, esc)
+    assert r.desfecho == "fora_da_politica"
+
+
+def test_troca_com_mais_de_30_dias_e_negada():
+    from datetime import date
+    rg, ferr, r, esc = _rota()
+    rg.troca(r, ferr, "AT1", _pedido(data_entrega=date(2026, 8, 1)), "quero trocar, usei so 2 vezes", ferr.agora, esc)
+    assert r.desfecho == "fora_da_politica" and "trocar_produto" not in [e["ferramenta"] for e in ferr.log]
+
+
+def test_troca_sem_dizer_o_uso_pergunta_antes_de_trocar(monkeypatch):
+    rg, ferr, r, esc = _rota()
+    monkeypatch.setattr(ferr, "trocas_do_pedido", lambda oid: 0)
+    rg.troca(r, ferr, "AT1", _pedido(), "nao gostei do cheiro, quero trocar", ferr.agora, esc)
+    assert r.desfecho == "aguardando_cliente" and "trocar_produto" not in [e["ferramenta"] for e in ferr.log]
+
+
+def test_troca_completa_executa_quando_o_cliente_diz_uso_e_nome_do_produto(monkeypatch):
+    from gocolega import rotas_gerais
+    rg, ferr, r, esc = _rota()
+    monkeypatch.setattr(ferr, "trocas_do_pedido", lambda oid: 0)
+    monkeypatch.setattr(rotas_gerais, "_produto_citado", lambda t, m, s: ([{"sku": "KSH-9", "nome": "Neroli", "preco_venda": 80}], "Neroli"))
+    rg.troca(r, ferr, "AT1", _pedido(), "usei so 2 vezes, quero trocar pelo Neroli", ferr.agora, esc)
+    assert r.desfecho == "autonomo" and ferr.log[0]["ferramenta"] == "trocar_produto" and ferr.log[0]["sku_novo"] == "KSH-9"
+
+
+def test_so_conta_troca_anterior_a_conversa_nao_a_que_o_atendente_fez_nela(base_completa):
+    """AT108329: a unica troca do pedido GBH369157 e a feita pelo atendente NESTA conversa; antes dela, zero."""
+    from datetime import datetime
+    from gocolega.ferramentas import Ferramentas
+    assert Ferramentas("atendente", "x", datetime(2026, 9, 1, 9, 20)).trocas_do_pedido("GBH369157") == 0
+    assert Ferramentas("atendente", "x", datetime(2026, 12, 1)).trocas_do_pedido("GBH369157") >= 1
+
+
+def test_cobranca_duplicada_confirmada_reembolsa_so_o_valor_extra_e_acima_da_alcada_pede_aprovacao(monkeypatch):
+    from datetime import datetime
+    rg, ferr, r, esc = _rota()
+    pag = lambda v: {"transacao_id": "T", "metodo": "pix", "status": "paga", "valor": v, "valor_estornado": 0, "data_hora_criacao": datetime(2026, 9, 9)}
+    monkeypatch.setattr(ferr, "verificar_pagamento", lambda oid, ate=None: [pag(69.9), pag(69.9)])
+    rg.financeiro(r, ferr, "AT1", _pedido(valor=69.9), "o pix saiu duas vezes", ferr.agora, esc)
+    assert r.desfecho == "autonomo" and ferr.log[0]["ferramenta"] == "reembolsar" and ferr.log[0]["valor"] == 69.9
+    rg, ferr, r, esc = _rota()
+    monkeypatch.setattr(ferr, "verificar_pagamento", lambda oid, ate=None: [pag(161.41), pag(161.41)])
+    rg.financeiro(r, ferr, "AT1", _pedido(valor=161.41), "fui cobrado duas vezes", ferr.agora, esc)
+    assert r.desfecho == "aguardando_supervisor" and "reembolsar" not in [e["ferramenta"] for e in ferr.log]
+
+
+def test_sem_duplicidade_no_gateway_nao_reembolsa_e_pede_o_comprovante(monkeypatch):
+    from datetime import datetime
+    rg, ferr, r, esc = _rota()
+    monkeypatch.setattr(ferr, "verificar_pagamento", lambda oid, ate=None: [
+        {"transacao_id": "T", "metodo": "cartao_credito", "status": "capturada", "valor": 58.81, "valor_estornado": 0, "data_hora_criacao": datetime(2026, 9, 9)}])
+    rg.financeiro(r, ferr, "AT1", _pedido(), "fui cobrado duas vezes no cartao", ferr.agora, esc)
+    assert r.desfecho == "aguardando_cliente" and "reembolsar" not in [e["ferramenta"] for e in ferr.log]
+
+
+def test_cupom_fora_da_vigencia_explica_o_motivo(base_completa):
+    from datetime import datetime
+    from gocolega import rotas_gerais
+    from gocolega.ferramentas import Ferramentas
+    from gocolega.orquestrador import Resultado
+    ferr = Ferramentas("atendente", "gocolega", datetime(2026, 11, 2, 9, 0))
+    r = Resultado("AT1")
+    rotas_gerais.promocao(r, ferr, "AT1", None, "O cupom OUTUBRO10 nao esta funcionando", ferr.agora, lambda r_, s, f, fb: fb)
+    assert r.desfecho == "autonomo" and "vigencia" in ferr.log[-1]["texto"]
+
+
+def test_elogio_e_agradecido_sem_chamar_ninguem():
+    rg, ferr, r, esc = _rota()
+    rg.elogio(r, ferr, "AT1", esc)
+    assert r.desfecho == "autonomo" and [e["ferramenta"] for e in ferr.log] == ["agradecer", "responder_cliente"]
+
+
+def test_sem_pedido_pergunta_o_numero_em_vez_de_chamar_uma_pessoa():
+    rg, ferr, r, esc = _rota()
+    rg.pedir_pedido(r, ferr, "AT1", esc, "Financeiro")
+    assert r.desfecho == "aguardando_cliente" and "acionar_pessoa" not in [e["ferramenta"] for e in ferr.log]

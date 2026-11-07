@@ -26,6 +26,7 @@ from gocolega.orquestrador import tratar  # noqa: E402
 
 N_HIST = int(sys.argv[1]) if len(sys.argv) > 1 else 150
 SEMENTE = int(sys.argv[2]) if len(sys.argv) > 2 else 42
+N_FILA = int(sys.argv[3]) if len(sys.argv) > 3 else 10_000  # todas da fila, a menos que se limite
 SAIDA = os.path.join(RAIZ, "codigo", "benchmarks", "lote_resultados.csv")
 
 
@@ -35,7 +36,7 @@ def escolher() -> list[tuple[str, str]]:
     hist = dados.consulta(f"select conversation_id from historico_conversas c where {com_texto.format(t='c')} order by 1")
     ids = [h["conversation_id"] for h in hist]
     random.Random(SEMENTE).shuffle(ids)
-    return [("fila", f["conversation_id"]) for f in fila] + [("historico", i) for i in ids[:N_HIST]]
+    return [("fila", f["conversation_id"]) for f in fila[:N_FILA]] + [("historico", i) for i in ids[:N_HIST]]
 
 
 def main():

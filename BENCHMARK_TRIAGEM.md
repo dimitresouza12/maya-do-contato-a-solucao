@@ -1,66 +1,78 @@
-# Benchmark da triagem: Jev × gpt-5.6-luna × gpt-5.6-terra × regras
+# Benchmark da triagem: Jev × gpt-5.6 × gpt-6 × regras
 
 Pergunta: **quem classifica melhor a mensagem do cliente?** Feito em 07/11/2026 para decidir se o Jev continua na triagem do GoColega.
 
+> **Correção (mesmo dia):** a primeira versão deste documento dizia que Jev, luna e terra "empatam" (52%, 54%, 56%). Aqueles números vinham de uma amostra que **não era reprodutível** (o `group by` do DuckDB não tem ordem fixa e o sorteio com semente embaralhava uma lista diferente a cada execução; só 9 das 100 conversas coincidiam entre duas execuções). A amostra agora é ordenada antes do sorteio, e **todos os classificadores rodaram juntos, nas mesmas 100 conversas**. Os números abaixo substituem os antigos, e a conclusão mudou. Ver `DIARIO.md`, entrada 30.
+
 ## Método
-- **Amostra:** 100 conversas aleatórias (semente 42) entre as que têm `tag_agente`, de um total de 2.654 rotuladas.
+- **Amostra:** 100 conversas (semente 42) entre as que têm `tag_agente`, de um total de 2.654 rotuladas. Agora reprodutível.
 - **Gabarito:** a `tag_agente`, escolhida **manualmente por um atendente** ao encerrar a conversa. Não é verdade absoluta (ver "Limites").
 - **Entrada:** o mesmo texto que o GoColega recebe (mensagens do cliente concatenadas), com CPF, cartão e telefone mascarados.
-- **Justiça:** os quatro receberam só os **nomes** das 13 categorias, sem definições. O texto do cliente entra delimitado como dado.
+- **Justiça:** todos receberam só os **nomes** das 13 categorias, sem definições. O texto do cliente entra delimitado como dado.
+- **Modelos:** Jev; gpt-5.6-luna e gpt-5.6-terra (usados no GoColega); gpt-6-luna e gpt-6-astra (testados agora); regras.
 - **Reprodução:** `python codigo/benchmarks/comparar_triagem.py 100 42`. Resultados por conversa em `codigo/benchmarks/triagem_resultados.csv` (sem o texto do cliente).
 
 ## Resultado 1: acerto da categoria exata (13 categorias)
 
 | Classificador | Acerto | Intervalo de 95% | Tempo médio | p95 |
 |---|---|---|---|---|
-| **Jev** | 52/100 | 42% a 62% | **0,53 s** | 0,57 s |
-| gpt-5.6-luna | 54/100 | 44% a 63% | 2,13 s | 3,28 s |
-| gpt-5.6-terra | 56/100 | 46% a 65% | 2,28 s | 3,48 s |
-| Regras | 36/100 | 27% a 46% | instantâneo | instantâneo |
+| **Jev** | 62/100 | 52% a 71% | **0,55 s** | 0,59 s |
+| gpt-5.6-luna | 70/100 | 60% a 78% | 2,08 s | 3,50 s |
+| gpt-5.6-terra | 71/100 | 61% a 79% | 2,21 s | 2,95 s |
+| gpt-6-luna | 72/100 | 63% a 80% | 5,78 s | 7,86 s |
+| **gpt-6-astra** | **75/100** | 66% a 82% | 3,06 s | 6,13 s |
+| Regras | 46/100 | 37% a 56% | instantâneo | instantâneo |
 
-**Os três modelos empatam estatisticamente** (os intervalos se sobrepõem quase por inteiro). A diferença real é que as **regras ficam bem atrás** e que o **Jev é cerca de 4× mais rápido**.
+Os quatro modelos GPT ficam entre 70% e 75% e **empatam entre si**. O **Jev fica 8 a 13 pontos abaixo**: os intervalos ainda se tocam, mas a diferença é consistente nos quatro. As regras ficam bem atrás. O Jev é de 4× a 10× mais rápido.
 
 ## Resultado 2: acerto por rota (o que muda a ação do GoColega)
-O GoColega só executa duas rotas: pós-venda (Avaria, Produto faltando, Reclamação produto) e rastreio (Rastreio, Atraso). Confundir Rastreio com Atraso, o erro mais comum do Jev, **não muda a ação**. Por rota:
+O GoColega só executa duas rotas: pós-venda (Avaria, Produto faltando, Reclamação produto) e rastreio (Rastreio, Atraso). Confundir Rastreio com Atraso **não muda a ação**.
 
-| Classificador | Acerto por rota | Intervalo de 95% |
-|---|---|---|
-| Jev | 76/100 | 67% a 83% |
-| luna | 79/100 | 70% a 86% |
-| terra | 77/100 | 68% a 84% |
-| Regras | 76/100 | 67% a 83% |
+| Classificador | Rota certa | Intervalo de 95% | Agiria em rota errada |
+|---|---|---|---|
+| Jev | 88/100 | 80% a 93% | 9 |
+| gpt-5.6-luna | 90/100 | 83% a 94% | 7 |
+| gpt-5.6-terra | 92/100 | 85% a 96% | 6 |
+| gpt-6-luna | 92/100 | 85% a 96% | 6 |
+| gpt-6-astra | 92/100 | 85% a 96% | 6 |
+| Regras | 73/100 | 64% a 81% | 4 |
 
-**Na rota, até as regras empatam.** A vantagem dos modelos está na granularidade das 13 categorias e, de forma anedótica, em casos como o sarcasmo (não medimos isso à parte).
+**Na rota, a diferença entre o Jev e os modelos GPT é pequena (88% contra 90% a 92%) e está dentro do erro da amostra.** Onde o Jev perde mais é na granularidade: confunde Rastreio com Atraso (13 vezes) e acerta só 11 das 25 conversas de Rastreio, contra 19 do gpt-6-astra.
 
 ## Resultado 3: a confiança é útil?
 
-| Classificador | Acerto da categoria quando confiança ≥ 0,7 | quando < 0,7 |
+| Classificador | Acerto da categoria com confiança ≥ 0,7 | com confiança < 0,7 |
 |---|---|---|
-| **Jev** | 46/77 (60%) | 6/23 (**26%**) |
-| luna | 54/100 | nenhum caso |
-| terra | 56/100 | nenhum caso |
+| **Jev** | 56/80 (70%) | 6/20 (**30%**) |
+| gpt-5.6-luna | 70/99 | 0/1 |
+| gpt-5.6-terra | 70/99 | 1/1 |
+| gpt-6-luna | 72/100 | nenhum caso |
+| gpt-6-astra | 75/100 | nenhum caso |
 
-- **A confiança do Jev informa:** abaixo de 0,7 o acerto da categoria cai para 26% (e o da rota para 14/23, 61%, contra 62/77, 81%, acima de 0,7).
-- **A "confiança" do luna e do terra é inútil para decidir:** eles disseram ≥ 0,7 em **todas** as 100 respostas, errando 44% e 46%. Não dá para usá-la para chamar um humano.
-- Faixas do Jev, por rota: confiança 0 a 0,5 acertou 3 de 6; 0,5 a 0,7, 11 de 17; 0,7 a 0,9, 13 de 17; 0,9 a 1,0, 49 de 60.
+- **A confiança do Jev informa:** abaixo de 0,7 o acerto cai para 30%. É isso que dispara a segunda opinião da cascata.
+- **A "confiança" dos modelos GPT é inútil para decidir:** eles disseram ≥ 0,7 em praticamente **todas** as respostas, errando entre 25% e 30%. Não dá para usá-la para chamar um humano.
+- **Mas a confiança do Jev também deixa passar muito erro:** 24 das 80 respostas com confiança alta estavam erradas (30%).
 
 ## Outras observações
-- **Todos os modelos erram as mesmas categorias:** "Outros" (0 de 9 nos três modelos) e "Reclamação produto" (0 de 3). Nesses casos o gabarito humano é provavelmente ambíguo, e não um defeito do modelo.
-- **Em 36 das 100 conversas nenhum dos quatro acertou.** Só em 47 os três modelos concordam e acertam. Isso sugere ruído no gabarito.
-- **Custo:** o Jev gastou US$ 0,00256 nas 100 chamadas (≈ **US$ 0,0000256 por conversa**, estimativa do proxy). O proxy **não informa preço por chamada** para luna e terra, só tokens: 17.771 de entrada e ~2.300 de saída cada. Por isso **não dá para comparar custo em dólar** entre eles.
-- **Cobertura do GoColega:** as duas rotas que ele executa somam 1.577 das 2.984 conversas do histórico (52,8%), pelas etiquetas humanas. As outras 47% ainda vão para uma pessoa.
+- **Todos erram as mesmas categorias:** "Reclamação produto" (0 de 3 em todos) e "Outros" (0 de 2, só as regras acertam 1). O gabarito humano é provavelmente ambíguo nesses casos.
+- **Em 19 das 100 conversas nenhum classificador acertou.** Isso sugere ruído no gabarito.
+- **Custo:** o Jev gastou US$ 0,00256 nas 100 chamadas (≈ **US$ 0,0000256 por conversa**, estimativa do proxy). O proxy **não informa preço por chamada** para os modelos GPT, só tokens (17.566 de entrada cada; saída de ~2.100 a ~2.300, e **4.783 no gpt-6-luna**). Por isso **não dá para comparar custo em dólar**.
+- **Cobertura do GoColega:** as duas rotas que ele executa somam 1.577 das 2.984 conversas do histórico (52,8%), pelas etiquetas humanas.
 
 ## Decisão
-**Manter o Jev na triagem.** Razões, em ordem de peso:
-1. **Empata em acerto** com os modelos maiores (a diferença está dentro do erro da amostra).
-2. **4× mais rápido** (0,53 s contra ~2,2 s) e com custo medido.
-3. **Única confiança utilizável:** a dos outros dois não separa acerto de erro.
+**Em aberto.** O que os dados sustentam:
 
-**Consequência (implementada):** o GoColega agia mesmo quando o Jev tinha confiança baixa (23% das conversas da amostra), e abaixo de 0,7 só 61% das rotas estavam certas. Agora há uma **cascata**: confiança < 0,7 chama o `terra` como segunda opinião, e a discordância na ação, ou a falta de resposta válida, vai para uma pessoa. Ver `DIARIO.md`, entrada 16. A taxa real de discordância **ainda não foi medida**.
+| Opção | A favor | Contra |
+|---|---|---|
+| Manter **Jev + cascata** (terra desempata abaixo de 0,7) | 0,55 s, custo conhecido, sinal de confiança | 62% na categoria; 30% dos erros passam com confiança alta e a cascata não os vê |
+| Trocar para **gpt-6-astra** | Maior acerto (75%), 92% na rota, 3 s é aceitável em atendimento | Sem confiança utilizável: não há como acionar a segunda opinião por incerteza; custo em dólar desconhecido |
+| **gpt-6-astra com Jev como sinal de incerteza** (os dois rodam; humano se discordarem) | Usa o melhor de cada um | Duas chamadas por conversa; precisa ser medido |
+
+Nenhuma troca foi feita no código: o GoColega continua com Jev + cascata, e os números do lote de 210 conversas foram medidos assim.
 
 ## Limites (leia antes de citar estes números)
-- **Amostra pequena:** 100 conversas, e os intervalos de 95% vão de ~±10 pontos. Diferenças de 2 a 4 pontos entre modelos **não significam nada**.
-- **O gabarito é humano e ruidoso:** tags colocadas à mão, com conversas de mais de um assunto. O "acerto de 52%" **não é a acurácia do produto**: é a concordância com um atendente.
+- **Amostra pequena:** 100 conversas, intervalos de 95% de cerca de ±10 pontos. Diferenças de 2 a 4 pontos entre modelos GPT **não significam nada**.
+- **O gabarito é humano e ruidoso:** tags colocadas à mão, com conversas de mais de um assunto. O acerto **não é a acurácia do produto**: é a concordância com um atendente.
 - **Prompt sem definições:** nenhum classificador recebeu a descrição de cada categoria. Com definições, todos provavelmente melhorariam. Não testado.
 - **Só a categoria foi medida.** Os sinais de "caso sensível" e "injeção" **não têm rótulo** na base e **não foram avaliados**.
 - **As regras já foram ajustadas por mim em cima de algumas conversas da base** (não necessariamente desta amostra), o que pode favorecê-las um pouco.

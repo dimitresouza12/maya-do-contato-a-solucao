@@ -8,7 +8,7 @@ import json
 import re
 from datetime import datetime
 
-from . import dados
+from . import dados, tom
 
 PII = [
     (re.compile(r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b"), "[CPF omitido]"),
@@ -30,6 +30,9 @@ class SemPermissao(Exception):
 class Ferramentas:
     def __init__(self, papel: str, usuario: str, agora: datetime | None = None):
         self.papel, self.usuario, self.agora = papel, usuario, agora or datetime.now()
+        self.canal: str | None = None  # canal da conversa em tratamento (o orquestrador preenche)
+        self.cliente: str | None = None  # mensagem do cliente, so para o tom da resposta
+        self.categoria_conversa: str | None = None
         self.log: list[dict] = []
         self._perm = {
             r["ferramenta"]: {p.strip() for p in str(r["papeis_permitidos"]).split(";")}
@@ -81,7 +84,10 @@ class Ferramentas:
 
     def trocas_do_pedido(self, order_id: str) -> int:
         self._exige("consultar_pedido")
-        r = dados.uma("select count(*) n from trocas_reenvios where order_id_original = ? and tipo = 'troca'", [order_id])
+        # So trocas ANTERIORES ao momento da conversa: a troca que o atendente fez NESTA conversa e registrada na base
+        # e, sem este filtro, o agente a veria como "ja feita" e negaria a troca (vazamento do futuro, DIARIO 34).
+        r = dados.uma("select count(*) n from trocas_reenvios where order_id_original = ? and tipo = 'troca' "
+                      "and data_solicitacao < ?", [order_id, self.agora])
         return int(r["n"]) if r else 0
 
     # --- acao ---
@@ -94,8 +100,19 @@ class Ferramentas:
         return self._registra("solicitar_foto", conversation_id=conversation_id, do_que=do_que)
 
     def responder_cliente(self, conversation_id: str, texto: str):
+        """Envia a resposta (simulado). No Reclame Aqui ela e PUBLICA e sai sem aprovacao previa (decisao do projeto, DIARIO 33);
+        por isso o registro leva publico=True e o texto passa pelos mesmos filtros (PII mascarada, Verificador, sem acusacao)."""
         self._exige("responder_cliente")
-        return self._registra("responder_cliente", conversation_id=conversation_id, texto=mascarar_pii(texto))
+        texto = mascarar_pii(texto).replace("**", "")  # WhatsApp e e-mail nao renderizam negrito em markdown
+        # Acolhimento: retribui o cumprimento, usa o primeiro nome e reconhece o sentimento, se o texto ainda nao fizer isso.
+        texto = tom.acolher(self.cliente, texto, self.categoria_conversa, self.canal)
+        extra = {"publico": True} if self.canal == "reclame_aqui" else {}
+        return self._registra("responder_cliente", conversation_id=conversation_id, texto=texto, **extra)
+
+    def responder_colaborador(self, pedido_id: str, resposta: str):
+        """Canal do time (Slack, simulado): a resposta vai para o log, como as demais acoes. PII mascarada."""
+        self._exige("responder_colaborador")
+        return self._registra("responder_colaborador", pedido_id=pedido_id, resposta=mascarar_pii(resposta))
 
     def reenviar_produto(self, order_id: str, valor: float, motivo: str, aprovacao_id: str | None = None):
         self._exige("reenviar_produto")
@@ -132,6 +149,52 @@ class Ferramentas:
     def abrir_chamado_transportadora(self, order_id: str, motivo: str):
         self._exige("abrir_chamado_transportadora")
         return self._registra("abrir_chamado_transportadora", order_id=order_id, motivo=motivo)
+
+    # --- rotas do dia a dia (cancelamento, troca, financeiro, cupom) ---
+    def cancelar_pedido(self, order_id: str, motivo: str = ""):
+        """So antes da separacao (a regra e conferida por quem chama): estorno integral automatico."""
+        self._exige("cancelar_pedido")
+        return self._registra("cancelar_pedido", order_id=order_id, motivo=motivo, efeito="estorno integral automatico")
+
+    def trocar_produto(self, order_id: str, sku_novo: str, valor: float, aprovacao_id: str | None = None):
+        self._exige("trocar_produto")
+        return self._registra("trocar_produto", order_id=order_id, sku_novo=sku_novo, valor=valor, aprovacao_id=aprovacao_id)
+
+    def agradecer(self, conversation_id: str):
+        self._exige("agradecer")
+        return self._registra("agradecer", conversation_id=conversation_id)
+
+    def negar_por_politica(self, conversation_id: str, regra: str):
+        self._exige("negar_por_politica")
+        return self._registra("negar_por_politica", conversation_id=conversation_id, regra=regra)
+
+    def verificar_pagamento(self, order_id: str, ate: datetime | None = None) -> list[dict]:
+        """Transacoes do pedido no gateway ate o momento `ate` (sem enxergar o futuro)."""
+        self._exige("verificar_pagamento")
+        ate = ate or self.agora
+        return dados.consulta(
+            "select transacao_id, metodo, status, valor, valor_estornado, data_hora_criacao from pagamentos_gateway "
+            "where order_id = ? and data_hora_criacao <= ? order by data_hora_criacao", [order_id, ate])
+
+    def validar_cupom(self, codigo: str) -> dict | None:
+        self._exige("validar_cupom")
+        return dados.uma("select * from cupons where upper(codigo) = upper(?)", [codigo])
+
+    # --- analista ---
+    def abrir_incidente(self, tipo: str, escopo: dict, evidencias: str):
+        self._exige("abrir_incidente")
+        return self._registra("abrir_incidente", tipo=tipo, escopo=escopo, evidencias=evidencias)
+
+    def notificar_clientes(self, order_ids: list[str], tipo_aviso: str, texto: str):
+        """Aviso proativo. Teto de 300 clientes por dia (parametros.md), somando as chamadas do dia."""
+        self._exige("notificar_clientes")
+        dia = self.agora.date().isoformat()
+        ja = sum(len(e["order_ids"]) for e in self.log
+                 if e["ferramenta"] == "notificar_clientes" and e["quando"][:10] == dia)
+        if ja + len(order_ids) > 300:
+            raise SemPermissao(f"Teto de 300 notificacoes por dia: ja enviadas {ja}, pedido de {len(order_ids)}")
+        return self._registra("notificar_clientes", order_ids=list(order_ids), tipo_aviso=tipo_aviso,
+                              texto=mascarar_pii(texto))
 
     # --- supervisor ---
     def decidir_suspeita(self, conversation_id: str, decisao: str, justificativa: str, sinalizado_por: str):

@@ -9,7 +9,7 @@ IMPORTANTE: a situacao e calculada so com eventos ate 'agora' (a data da convers
 (posicao de 02/11) numa conversa antiga seria vazar o futuro.
 """
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 
 from . import dados
@@ -54,6 +54,7 @@ class Situacao:
     previsao: date | None = None
     chamado: dict | None = None  # chamado ja aberto e ainda nao encerrado na data da conversa
     transportadora: str | None = None
+    avisos: list = field(default_factory=list)  # falhas de leitura dos dados (antes eram engolidas em silencio)
 
 
 @dataclass
@@ -82,24 +83,28 @@ def _d(x) -> date | None:
 def situacao(pedido: dict, agora: datetime, eventos: list[dict] | None = None, chamado: dict | None = None) -> Situacao:
     """eventos e chamado podem ser injetados (testes); sem isso, vem dos portais e da tabela de chamados."""
     cod = pedido.get("codigo_rastreio")
+    avisos = []
     if eventos is None:
         try:
             eventos = dados.consulta(
                 "select status, data_hora_evento, local, previsao_entrega from rastreio_portais_transportadoras "
                 "where codigo_rastreio = ? and data_hora_evento <= ? order by data_hora_evento", [cod, agora]) if cod else []
-        except Exception:
+        except Exception as e:  # tabela ausente ou ilegivel: segue sem eventos, mas AVISA (DIARIO, entrada 29)
             eventos = []
+            avisos.append(f"nao consegui ler os eventos do rastreio ({type(e).__name__}); decidi sem eles")
     if chamado is None:
         try:
             chamado = dados.uma(
                 "select chamado_id, data_abertura, motivo, status, nova_previsao_entrega from chamados_transportadora "
                 "where order_id = ? and data_abertura <= ? and (data_encerramento is null or data_encerramento > ?) "
                 "order by data_abertura desc limit 1", [pedido.get("order_id"), agora, agora])
-        except Exception:
+        except Exception as e:
             chamado = None
+            avisos.append(f"nao consegui ler os chamados da transportadora ({type(e).__name__})")
 
     prometida = _d(pedido.get("data_prometida"))
-    s = Situacao(estado="em_transito", prometida=prometida, chamado=chamado, transportadora=pedido.get("transportadora"))
+    s = Situacao(estado="em_transito", prometida=prometida, chamado=chamado, transportadora=pedido.get("transportadora"),
+                 avisos=avisos)
     status_vistos = {e["status"] for e in eventos}
     entregue_em = _d(pedido.get("data_entrega"))
 

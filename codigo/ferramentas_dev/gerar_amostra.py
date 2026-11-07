@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.join(RAIZ, "codigo"))
 
 from gocolega import dados  # noqa: E402
 
-CONVERSAS = ["AT105180", "AT108528", "AT108179", "AT107296", "AT105718", "AT105041"]  # cenas da demo e dos testes
+CONVERSAS = ["AT105180", "AT108528", "AT108179", "AT107296", "AT105718", "AT105041", "AT104736"]  # cenas da demo e dos testes
 DESTINO = os.path.join(RAIZ, "dados", "amostra")
 
 

@@ -5,6 +5,9 @@ import pytest
 @pytest.fixture(autouse=True)
 def sem_rede_nem_token(monkeypatch):
     monkeypatch.delenv("AI_PROXY_API_KEY", raising=False)
+    # Os testes da cascata e do Jev simulam o Jev como triador; os do triador por modelo ligam "modelo" por conta propria.
+    from gocolega import llm
+    monkeypatch.setattr(llm, "TRIADOR", "jev")
 
 
 @pytest.fixture

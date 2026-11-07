@@ -1,4 +1,8 @@
 conversation_id,message_id,autor,timestamp,texto
+AT104736,MS0000149,cliente,2026-08-05 08:20:14,"[Produto chegou danificado] O frasco do óleo de barba chegou quebrado. Nem consegui usar. Quero outro. Aproveitando, e não veio o brinde. Pedido GBH359418."
+AT104736,MS0000150,agente,2026-08-07 08:24:57,"Poxa, Carlos, sinto muito! Me manda uma foto do produto e da embalagem pra eu registrar aqui? Renata | Time Barbour's"
+AT104736,MS0000151,cliente,2026-08-07 08:27:48,mandei as fotos aí
+AT104736,MS0000152,agente,2026-08-07 08:34:50,"Recebi as fotos, obrigada. Já solicitei o reenvio sem custo do óleo de barba."
 AT105041,MS0000455,cliente,2026-08-07 12:47:00,"Meu pedido tá parado no centro de distribuição da Expressa Já em Simões Filho (BA) desde 05/08 mds. Pedido GBH372359. Obrigada, Cecília"
 AT105041,MS0000456,bot,2026-08-07 12:49:07,"Olá! Esta é uma resposta automática: sua mensagem foi recebida e será respondida em até 24 horas. Protocolo #4895207. Equipe Kokeshi"
 AT105041,MS0000457,agente,2026-08-08 08:38:46,"Oi, Cecília! Seu pedido está com a Expressa Já, previsão até 07/08. Vi que o rastreio está parado, então já abri um chamado com a transportadora. Aqui é o Lucas."

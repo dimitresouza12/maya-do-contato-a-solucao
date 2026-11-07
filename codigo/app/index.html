@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GoColega</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--fundo:#fbf4ee;--sup:#fff;--texto:#2f2f33;--suave:#6b6b73;--linha:#e6dcd2;--azul:#2659a5;--azul-esc:#1f3f78;--lima:#d7d900;--ciano:#3dbfef;
+--ok:#2e7d32;--alerta:#c77700;--crit:#e5381a;--zap:#dcf8c6;--slack:#4a154b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fundo);color:var(--texto);font:15px/1.5 Poppins,system-ui,sans-serif}
+header{background:var(--azul);color:#fff;padding:14px 28px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+header h1{margin:0;font-size:1.35rem;font-weight:700}
+header .sub{opacity:.85;font-size:.85rem}
+.pilula{background:var(--lima);color:var(--azul-esc);font-weight:600;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:3px 11px;border-radius:999px}
+.selos{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.selo{background:rgba(255,255,255,.16);border-radius:999px;padding:3px 12px;font-size:.75rem}
+nav{display:flex;gap:6px;padding:14px 28px 0;flex-wrap:wrap}
+nav button{border:0;background:transparent;font:600 .95rem Poppins,sans-serif;color:var(--suave);padding:9px 18px;border-radius:12px 12px 0 0;cursor:pointer}
+nav button.on{background:var(--sup);color:var(--azul)}
+nav .badge{background:var(--crit);color:#fff;border-radius:999px;font-size:.7rem;padding:1px 8px;margin-left:6px}
+main{background:var(--sup);margin:0 28px 28px;border-radius:0 18px 18px 18px;padding:22px;min-height:70vh;border:1px solid var(--linha)}
+.grade{display:grid;grid-template-columns:minmax(300px,420px) 1fr;gap:22px}
+@media(max-width:900px){.grade{grid-template-columns:1fr}}
+h2{font-size:1rem;margin:0 0 10px;color:var(--azul-esc)}
+.lista{display:flex;flex-direction:column;gap:8px;max-height:64vh;overflow:auto;padding-right:4px}
+.item{border:1px solid var(--linha);border-left:5px solid var(--linha);border-radius:12px;padding:9px 12px;cursor:pointer;background:var(--fundo)}
+.item:hover{border-color:var(--azul)}.item.on{background:#eaf1fb;border-color:var(--azul)}
+.item.humano{border-left-color:var(--crit);background:#fff3f0}.item.agente{border-left-color:var(--ok)}.item.assumido{border-left-color:var(--alerta)}
+.item.resolvido{border-left-color:var(--suave);opacity:.8}.item.novo{animation:pisca 1.4s}
+@keyframes pisca{from{box-shadow:0 0 0 3px var(--lima)}to{box-shadow:none}}
+.item b{font-size:.78rem;color:var(--azul)}.item small{display:block;color:var(--suave);font-size:.76rem}
+.item p{margin:3px 0 0;font-size:.83rem}.item .ag{color:var(--ok)}
+textarea,input,select{width:100%;font:inherit;border:1px solid var(--linha);border-radius:12px;padding:10px 12px;background:#fff;color:var(--texto)}
+textarea{min-height:90px;resize:vertical}
+.btn{background:var(--azul);color:#fff;border:0;border-radius:999px;font:600 .88rem Poppins,sans-serif;padding:9px 22px;cursor:pointer}
+.btn:disabled{opacity:.5;cursor:wait}.btn.lima{background:var(--lima);color:var(--azul-esc)}.btn.cinza{background:#e9e3dc;color:var(--texto)}.btn.verm{background:var(--crit)}
+.linha{display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.chat{background:#efe7dd;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.bolha{max-width:80%;padding:10px 14px;border-radius:16px;white-space:pre-wrap;word-break:break-word}
+.bolha.cli{background:#fff;align-self:flex-start;border-top-left-radius:4px}
+.bolha.ag{background:var(--zap);align-self:flex-end;border-top-right-radius:4px}
+.bolha.hum{background:#d7e6fb;align-self:flex-end;border-top-right-radius:4px}
+.bolha.slack{background:#fff;border-left:4px solid var(--slack);align-self:stretch;max-width:100%;border-radius:8px}
+.bolha small{display:block;color:var(--suave);font-size:.7rem;margin-bottom:2px}
+.evento{align-self:center;font-size:.75rem;color:var(--suave)}
+.sel{display:inline-block;border-radius:999px;padding:3px 13px;font-size:.78rem;font-weight:600;margin:10px 8px 0 0}
+.ok{background:#e3f3e4;color:var(--ok)}.alerta{background:#fdf0d9;color:var(--alerta)}.crit{background:#fde4df;color:var(--crit)}.neutro{background:#e6eefb;color:var(--azul)}
+.alerta-humano{border:2px solid var(--crit);border-radius:14px;padding:12px 16px;background:#fff3f0;margin-top:12px}
+.alerta-humano h3{margin:0 0 4px;color:var(--crit);font-size:.95rem}
+.alerta-humano p{margin:4px 0;font-size:.85rem}
+.acoes{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{background:var(--fundo);border:1px solid var(--linha);border-radius:8px;padding:3px 10px;font-size:.76rem}
+details{margin-top:12px;border:1px solid var(--linha);border-radius:12px;padding:8px 14px;background:var(--fundo)}
+summary{cursor:pointer;font-weight:600;font-size:.85rem;color:var(--azul-esc)}
+details ol,details ul{margin:8px 0 2px;padding-left:20px;font-size:.82rem}
+code{font:.76rem/1.4 ui-monospace,Consolas,monospace}
+.barra-topo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.contadores{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.cont{border-radius:14px;padding:10px 14px;background:var(--fundo);border:1px solid var(--linha)}
+.cont b{font-size:1.6rem;display:block;line-height:1.1;color:var(--azul)}.cont span{font-size:.74rem;color:var(--suave)}
+.cont.verm{background:#fff3f0;border-color:var(--crit)}.cont.verm b{color:var(--crit)}.cont.verde b{color:var(--ok)}
+.filtros{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.filtros button{border:1px solid var(--linha);background:#fff;border-radius:999px;padding:3px 12px;font:500 .78rem Poppins,sans-serif;cursor:pointer}
+.filtros button.on{background:var(--azul);color:#fff;border-color:var(--azul)}
+.metricas{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:22px}
+.cartao{border-radius:18px;padding:16px 18px;background:var(--azul);color:#fff}
+.cartao.lima{background:var(--lima);color:var(--azul-esc)}.cartao.ciano{background:var(--ciano);color:#0b3550}
+.cartao b{font-size:2rem;display:block;line-height:1.1}.cartao span{font-size:.8rem}
+.barra{display:grid;grid-template-columns:260px 1fr 50px;gap:10px;align-items:center;margin:6px 0;font-size:.85rem}
+.barra div i{display:block;height:14px;border-radius:7px;background:var(--azul)}
+.nota{color:var(--suave);font-size:.8rem;margin-top:10px}
+.erro{color:var(--crit);font-weight:600;margin-top:10px}
+.vazio{color:var(--suave);padding:26px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>GoColega</h1><span class="pilula">Gogroup · GoHacks 2026</span>
+  <span class="sub">Agente de atendimento Gocase e GoBeauté</span>
+  <div class="selos" id="selos"></div>
+</header>
+<nav id="abas">
+  <button data-aba="atend" class="on">Atendimento<span class="badge" id="badge" hidden></span></button>
+  <button data-aba="time">Canal do time</button>
+  <button data-aba="res">Resultados</button>
+</nav>
+<main>
+  <section id="atend">
+    <div class="barra-topo">
+      <button class="btn" id="iniciar">Iniciar monitoramento</button>
+      <button class="btn cinza" id="reiniciar">Reiniciar</button>
+      <label class="nota" style="margin:0">Chegada de uma conversa a cada
+        <select id="vel" style="width:auto;display:inline-block;padding:3px 8px"><option value="2">2 s</option><option value="4" selected>4 s</option><option value="8">8 s</option></select></label>
+      <span class="nota" id="status" style="margin:0"></span>
+    </div>
+    <div class="contadores" id="contadores"></div>
+    <div class="grade">
+      <div>
+        <h2>Conversas em tempo real</h2>
+        <div class="filtros" id="filtros"></div>
+        <div class="lista" id="fila"><div class="vazio">Clique em <b>Iniciar monitoramento</b>: as conversas da fila chegam e o agente responde sozinho.</div></div>
+      </div>
+      <div id="detalhe"><div class="vazio">O agente atende sozinho. Quando uma pessoa precisar assumir, o caso fica em vermelho na lista. Clique numa conversa para ver o que ele fez.</div></div>
+    </div>
+  </section>
+  <section id="time" hidden>
+    <div class="grade">
+      <div><h2>Pedidos de colegas (exemplos nossos)</h2><div class="lista" id="colegas"></div>
+        <p class="nota">Não há Slack real nem pedidos de exemplo na base: estes foram escritos por nós para demonstrar cada rota. O canal é simulado.</p></div>
+      <div>
+        <h2>Como usar</h2>
+        <p class="nota" style="margin:0 0 12px">Clique num pedido à esquerda (ou escreva um) e em <b>Responder pedido</b>: o GoColega responde como responderia a esse colega no Slack.</p>
+        <select id="area"><option>logistica</option><option>qualidade</option><option>marketing</option><option>comercial</option><option>supervisao</option></select>
+        <textarea id="ctexto" style="margin-top:10px" placeholder="Escreva como um colega escreveria no canal."></textarea>
+        <div class="linha"><button class="btn" id="cenviar">Responder pedido</button><span id="ctempo" class="nota"></span></div>
+        <div id="cerro" class="erro"></div><div id="csaida"></div>
+      </div>
+    </div>
+  </section>
+  <section id="res" hidden><div id="resumo"></div></section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt !== undefined) e.textContent = txt; return e; };
+let ESTADO = null, MON = null, SEL = null, FILTRO = 'todas', VISTOS = new Set(), RASC = {};
+const COR = {autonomo:'ok', fora_da_politica:'neutro', aguardando_cliente:'neutro', aguardando_supervisor:'alerta', aguardando_aprovacao:'alerta', suspeita:'crit', sensivel:'crit', escalado:'alerta', erro:'crit',
+  respondido:'ok', aprovacao_solicitada:'alerta', recusado:'neutro', encaminhado:'alerta'};
+const CANAL = {whatsapp:'WhatsApp', email:'E-mail', reclame_aqui:'Reclame Aqui'};
+
+document.querySelectorAll('#abas button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#abas button').forEach(x => x.classList.toggle('on', x === b));
+  ['atend','time','res'].forEach(id => $('#'+id).hidden = id !== b.dataset.aba);
+});
+async function api(url, corpo) {
+  const r = await fetch(url, corpo ? {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(corpo)} : undefined);
+  const j = await r.json(); if (!r.ok) throw new Error(j.erro || r.status); return j;
+}
+function acoesChips(acoes) {
+  const box = el('div', 'acoes');
+  (acoes || []).forEach(a => {
+    const det = Object.entries(a).filter(([k]) => k !== 'ferramenta').map(([k, v]) => `${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).join(' · ');
+    const c = el('span', 'chip'); c.append(el('b', '', a.ferramenta)); if (det) c.append(el('span', '', '  ' + det.slice(0, 90))); box.append(c);
+  });
+  if (!(acoes || []).length) box.append(el('span', 'chip', 'nenhuma ação no sistema'));
+  return box;
+}
+function lista(titulo, itens, ordenada) {
+  const d = el('details'); d.append(el('summary', '', titulo));
+  const l = el(ordenada ? 'ol' : 'ul'); itens.forEach(t => { const li = el('li'); li.append(el('code', '', t)); l.append(li); }); d.append(l); return d;
+}
+
+// ---------------- monitor
+const FILTROS = [['todas','Todas'], ['humano','Precisam de humano'], ['agente','Agente cuidou']];
+function montarFiltros() {
+  const f = $('#filtros'); f.replaceChildren();
+  FILTROS.forEach(([k, t]) => { const b = el('button', FILTRO === k ? 'on' : '', t); b.onclick = () => { FILTRO = k; montarFiltros(); desenharLista(); }; f.append(b); });
+}
+function classeItem(i) { return i.status === 'fila_humana' ? 'humano' : i.status === 'humano' ? 'assumido' : i.status === 'resolvido' ? 'resolvido' : 'agente'; }
+function desenharLista() {
+  if (!MON) return;
+  const box = $('#fila'); box.replaceChildren();
+  const itens = MON.itens.filter(i => FILTRO === 'todas' || (FILTRO === 'humano' ? i.precisa_humano : !i.precisa_humano));
+  if (!itens.length) { box.append(el('div', 'vazio', MON.itens.length ? 'Nada neste filtro.' : 'Clique em Iniciar monitoramento: as conversas da fila chegam e o agente responde sozinho.')); return; }
+  itens.forEach(i => {
+    const d = el('div', 'item ' + classeItem(i) + (i.id === SEL ? ' on' : '') + (VISTOS.has(i.id) ? '' : ' novo'));
+    VISTOS.add(i.id);
+    d.append(el('b', '', `${i.id} · ${CANAL[i.canal] || i.canal} · ${i.marca} · ${i.tratado_em}`));
+    d.append(el('small', '', i.status === 'fila_humana' ? '⚠ PRECISA DE HUMANO · ' + i.desfecho_rotulo : i.status === 'humano' ? 'Com atendente · ' + i.desfecho_rotulo : i.status === 'resolvido' ? 'Resolvido pelo atendente' : i.desfecho_rotulo));
+    d.append(el('p', '', i.cliente));
+    if (i.agente) d.append(el('p', 'ag', '↳ ' + i.agente));
+    d.onclick = () => { SEL = i.id; carregarDetalhe(); desenharLista(); };
+    box.append(d);
+  });
+}
+function contadores() {
+  const c = MON.contadores, box = $('#contadores'); box.replaceChildren();
+  const add = (v, t, cl) => { const d = el('div', 'cont ' + (cl || '')); d.append(el('b', '', v), el('span', '', t)); box.append(d); };
+  add(c.tratadas + ' / ' + c.total, 'conversas atendidas');
+  add(c.agente, 'resolvidas pelo agente', 'verde');
+  add(c.aguardando_cliente, 'aguardando resposta do cliente');
+  add(c.fila_humana, 'precisam de humano agora', c.fila_humana ? 'verm' : '');
+  add(c.com_humano + c.resolvido_humano, 'com atendente / resolvidas por ele');
+  add(c.sem_humano === null ? '–' : Math.round(c.sem_humano * 100) + '%', 'sem humano (agente + perguntas ao cliente)');
+  const badge = $('#badge'); badge.hidden = !c.fila_humana; badge.textContent = c.fila_humana;
+  $('#iniciar').textContent = MON.rodando ? 'Pausar' : (c.tratadas ? 'Retomar' : 'Iniciar monitoramento');
+  $('#status').textContent = c.ocupado ? `agente atendendo ${c.ocupado}...` : (MON.rodando ? (c.tratadas >= c.total ? 'fila concluída' : 'aguardando a próxima conversa') : 'pausado');
+}
+async function atualizar() {
+  try { MON = await api('/api/monitor'); contadores(); desenharLista(); if (SEL && !document.activeElement.matches('#resp')) { /* detalhe so recarrega no clique ou na acao */ } } catch (e) {}
+}
+async function carregarDetalhe() {
+  if (!SEL) return;
+  const it = await api('/api/item?id=' + SEL), d = $('#detalhe'); d.replaceChildren();
+  d.append(el('h2', '', `${it.id} · ${CANAL[it.canal] || it.canal} · ${it.marca}`));
+  const chat = el('div', 'chat');
+  const c = el('div', 'bolha cli'); c.append(el('small', '', 'Cliente'), document.createTextNode(it.cliente)); chat.append(c);
+  if (!it.mensagens.length) chat.append(el('div', 'evento', '(o agente não escreveu ao cliente)'));
+  it.mensagens.forEach(m => { const b = el('div', 'bolha ag'); b.append(el('small', '', m.publico ? 'GoColega · resposta PÚBLICA no Reclame Aqui, enviada automaticamente (simulado)' : 'GoColega · enviado automaticamente'), document.createTextNode(m.texto)); chat.append(b); });
+  it.humano.forEach(h => { if (h.tipo === 'evento') chat.append(el('div', 'evento', `${h.quando} · ${h.quem} ${h.texto}`));
+    else { const b = el('div', 'bolha hum'); b.append(el('small', '', `${h.quem} · ${h.quando}${h.publico ? ' · publicação simulada' : ' · envio simulado'}`), document.createTextNode(h.texto)); chat.append(b); } });
+  d.append(chat, el('span', 'sel ' + (COR[it.desfecho] || 'neutro'), it.desfecho_rotulo), el('span', 'sel neutro', 'Assunto: ' + it.categoria), el('span', 'sel neutro', it.segundos + ' s de atendimento do agente'));
+  if (it.precisa_humano) {
+    const a = el('div', 'alerta-humano');
+    a.append(el('h3', '', it.status === 'fila_humana' ? '⚠ Precisa de um humano' : it.status === 'humano' ? 'Com um atendente' : 'Resolvido pelo atendente'));
+    a.append(el('p', '', it.motivo));
+    a.append(el('p', '', `Área: ${it.area || '—'} · Urgência: ${it.urgencia}${it.prazo ? ' · Prazo para a primeira resposta: ' + it.prazo : ''}`));
+    if (it.contexto) a.append(el('p', '', 'Contexto que o agente deixou: ' + it.contexto));
+    if (it.status !== 'resolvido') {
+      a.append(el('p', '', it.rascunho ? 'Rascunho sugerido pelo agente (revise antes de enviar):' : 'O agente não tem um rascunho seguro para este caso. Escreva a resposta:'));
+      const t = el('textarea'); t.id = 'resp'; t.value = RASC[it.id] !== undefined ? RASC[it.id] : it.rascunho; t.oninput = () => RASC[it.id] = t.value; a.append(t);
+      const l = el('div', 'linha');
+      if (it.status === 'fila_humana') { const b = el('button', 'btn cinza', 'Assumir atendimento'); b.onclick = () => acao(it.id, 'assumir'); l.append(b); }
+      const e = el('button', 'btn', 'Enviar ao cliente (simulado)'); e.onclick = () => acao(it.id, 'responder', t.value); l.append(e);
+      const r = el('button', 'btn lima', 'Marcar como resolvido'); r.onclick = () => acao(it.id, 'resolver'); l.append(r);
+      a.append(l);
+    }
+    d.append(a);
+  }
+  d.append(acoesChips(it.acoes));
+  d.append(lista('Passo a passo do agente (' + it.passos.length + ')', it.passos, true));
+  d.append(lista('Conversa entre os agentes (' + it.agentes.length + ' mensagens; * = modelo de IA)', it.agentes, false));
+}
+async function acao(id, a, texto) {
+  try { await api('/api/humano', {id, acao: a, texto}); if (a === 'responder') delete RASC[id]; await carregarDetalhe(); await atualizar(); }
+  catch (e) { alert('Erro: ' + e.message); }
+}
+$('#iniciar').onclick = async () => { MON = await api('/api/monitor/controle', {acao: MON && MON.rodando ? 'pausar' : 'iniciar', intervalo: $('#vel').value}); contadores(); };
+$('#reiniciar').onclick = async () => { SEL = null; VISTOS.clear(); RASC = {}; MON = await api('/api/monitor/controle', {acao: 'reiniciar'}); $('#detalhe').replaceChildren(el('div', 'vazio', 'Demonstração reiniciada.')); contadores(); desenharLista(); };
+$('#vel').onchange = () => api('/api/monitor/controle', {intervalo: $('#vel').value});
+
+// ---------------- canal do time
+async function enviarColega() {
+  $('#cerro').textContent = ''; $('#cenviar').disabled = true; $('#ctempo').textContent = 'processando...';
+  try {
+    const r = await api('/api/colega', {texto: $('#ctexto').value, area: $('#area').value, autor: 'Colega (' + $('#area').value + ')'});
+    const s = $('#csaida'); s.replaceChildren(); const chat = el('div', 'chat');
+    const q = el('div', 'bolha slack'); q.append(el('small', '', 'Colega · ' + $('#area').value), document.createTextNode($('#ctexto').value)); chat.append(q);
+    const a = el('div', 'bolha slack'); a.append(el('small', '', 'GoColega'), document.createTextNode(r.resposta)); chat.append(a);
+    s.append(chat, el('span', 'sel ' + (COR[r.desfecho] || 'neutro'), r.desfecho.replace('_', ' ')), el('span', 'sel neutro', r.intencao.replaceAll('_', ' ')), acoesChips(r.acoes), lista('Passo a passo', r.passos, true));
+    $('#ctempo').textContent = r.segundos + ' s';
+  } catch (e) { $('#cerro').textContent = 'Erro: ' + e.message; $('#ctempo').textContent = ''; }
+  $('#cenviar').disabled = false;
+}
+$('#cenviar').onclick = enviarColega;
+
+function montar() {
+  const sel = $('#selos');
+  [ESTADO.token ? 'modelos reais: ' + ESTADO.modelos.triagem + ' + ' + ESTADO.modelos.redator : 'sem token: só regras', 'base ' + ESTADO.base, 'canais simulados'].forEach(t => sel.append(el('span', 'selo', t)));
+  const col = $('#colegas');
+  ESTADO.colega.forEach(c => { const i = el('div', 'item'); i.append(el('b', '', c.autor), el('p', '', c.texto)); i.onclick = () => { $('#ctexto').value = c.texto; $('#area').value = c.area; }; col.append(i); });
+  const m = ESTADO.metricas, r = $('#resumo');
+  if (!m) { r.append(el('div', 'vazio', 'Sem lote medido ainda (rode codigo/benchmarks/rodar_lote.py).')); return; }
+  const pc = x => Math.round(x * 100) + '%';
+  const cs = el('div', 'metricas');
+  [['', pc(m.resolvidas), 'resolvidas pelo agente (inclui negativas com a regra)'], ['lima', pc(m.sem_humano), 'sem humano (inclui perguntas ao cliente)'],
+   ['ciano', pc(m.pessoa), 'precisam de uma pessoa'], ['', m.segundos_mediana + ' s', 'mediana por conversa (agente)']].forEach(([cl, v, t]) => {
+    const c = el('div', 'cartao ' + cl); c.append(el('b', '', v), el('span', '', t)); cs.append(c); });
+  r.append(el('h2', '', 'Último lote medido: ' + m.n + ' conversas reais (fila aberta + histórico)'), cs, el('h2', '', 'Como cada conversa terminou'));
+  const mx = Math.max(...Object.values(m.desfechos));
+  Object.entries(m.desfechos).forEach(([k, v]) => { const b = el('div', 'barra'); const w = el('div'); const i = el('i'); i.style.width = (v / mx * 100) + '%'; w.append(i);
+    b.append(el('span', '', k), w, el('span', '', v)); r.append(b); });
+  r.append(el('p', 'nota', 'Amostra pequena: serve para ver o comportamento, não para prometer um percentual. Rascunhos do Reclame Aqui contam como "precisa de pessoa" por desenho (resposta pública exige aprovação).'));
+}
+montarFiltros();
+api('/api/estado').then(e => { ESTADO = e; montar(); }).catch(e => document.body.append(el('p', 'erro', 'Não consegui carregar: ' + e.message)));
+atualizar(); setInterval(atualizar, 1500);
+</script>
+</body>
+</html>

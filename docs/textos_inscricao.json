@@ -1,0 +1,18 @@
+{
+  "problema": {
+    "limite": 600,
+    "texto": "O atendimento da Gocase e da GoBeauté recebe cerca de 4 mil conversas por mês, por WhatsApp, e-mail e Reclame Aqui. Em cada contato, o atendente abre de 2 a 4 sistemas (central, ERP, gateway e portal da transportadora) e gasta cerca de 10 minutos no WhatsApp e 22 no Reclame Aqui. Nem toda reclamação de avaria é verdadeira: reenviar uma falsa custa 45% do valor do pedido, e negar uma verdadeira custa o cliente. O supervisor aprova sem o dossiê pronto, e problemas que se repetem, como uma transportadora atrasando em vários estados, só aparecem depois que os clientes reclamam."
+  },
+  "solucao": {
+    "limite": 800,
+    "texto": "O GoColega é um agente de IA que trabalha como colega do atendente. Ele lê a conversa, classifica (gpt-5.6-terra), consulta pedido, rastreio e histórico, confere a foto contra o pedido e decide dentro da política: age (reenvia, reembolsa, abre chamado), pede aprovação, sinaliza suspeita sem acusar o cliente ou chama uma pessoa com o dossiê pronto. O modelo propõe e o código decide: alçada, prazo e papéis ficam em regras testadas. Os agentes (Detetive de Procedência, Guardião da política, Redator e Verificador) trocam mensagens, e dúvidas de produto são respondidas pela base, citando a fonte. No Reclame Aqui, a resposta é só rascunho para aprovação. Sobre a base inteira, o agente acha causa raiz (uma transportadora em 5 estados) e prepara o aviso proativo, que uma pessoa aprova."
+  },
+  "uso_de_ia": {
+    "limite": 800,
+    "texto": "Construí o GoColega sozinho, em um dia, em dupla com o Claude Code, que escreveu o código sob a minha direção. No produto uso o gpt-5.6-terra (triagem, segunda opinião e redação), o gpt-5.6-luna (juiz da foto e resumos) e o Jev (reserva da triagem), todos pelo AI Proxy. A IA errou e eu medi e corrigi: um benchmark com amostra não reprodutível dizia que os modelos empatavam, e o refiz (Jev 62%, terra 71%); a causa raiz apontava lotes por acaso até aplicarmos Bonferroni; uma resposta afirmou um benefício sem apoio na ficha do produto, e criamos o Verificador. São 33 entradas de erros no DIARIO.md e 188 testes sobre conversas reais, em situações comuns, difíceis e estranhas. Os dados são fictícios, e o token do proxy não vai ao repositório."
+  },
+  "impacto": {
+    "limite": 500,
+    "texto": "Em 1.082 conversas reais de rastreio e atraso, o GoColega ofereceu reenvio ou reembolso em 148, e a equipe reenviou nas 148. No lote de 210 conversas, {SEM_HUMANO} foram resolvidas sem humano (93% só informam), em {MEDIANA} de mediana. A causa raiz achou a Expressa Já em 5 estados (29% de conversas-problema contra 10%). Limites: ações simuladas; chamado com 29% de precisão. Segunda-feira: acessos de leitura, 200 casos de supervisores e modo sombra de 2 semanas."
+  }
+}

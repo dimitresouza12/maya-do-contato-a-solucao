@@ -218,7 +218,52 @@ Legenda de status: ✅ resolvido · ⚠️ aberto (lacuna conhecida)
 - **Causa:** a amostra não incluía `rastreio_portais_transportadoras` nem `chamados_transportadora`, e as conversas das cenas 7 a 9 também não estavam lá. Em `rastreio.py`, o `except Exception` devolvia lista vazia sem aviso, então a falta da tabela parecia "pedido sem eventos".
 - **Decisão:** a amostra precisa reproduzir **todas** as cenas da demo; os 174 testes passavam porque rodam contra a base completa ou pulam.
 - **Correção:** `gerar_amostra.py` passou a incluir as conversas AT105718 e AT105041 e as duas tabelas de rastreio. Conferido: as cenas 7, 8 e 9 dão o mesmo desfecho com a amostra e com a base completa.
-- **Aberto:** o `except Exception` em `rastreio.py` continua engolindo falhas de leitura; deveria registrar um aviso.
+- **Aberto (resolvido depois):** o `except Exception` em `rastreio.py` engolia falhas de leitura. Agora `Situacao.avisos` registra o motivo e o orquestrador mostra `AVISO:` no passo a passo (há teste).
+
+### 30. ✅ A amostra do benchmark da triagem não era reprodutível, e a conclusão "os modelos empatam" caiu
+- **Erro:** ao rodar de novo o benchmark para incluir os modelos gpt-6, só 9 das 100 conversas coincidiam com a rodada anterior, apesar da mesma semente (42).
+- **Causa:** o `group by` do DuckDB não garante a ordem das linhas; o sorteio com semente embaralhava uma lista diferente a cada execução.
+- **Decisão:** ordenar por `conversation_id` antes do sorteio e rodar **todos** os classificadores juntos, em vez de misturar rodadas.
+- **Correção:** `comparar_triagem.py` ordena a amostra e inclui `gpt-6-luna` e `gpt-6-astra`. Refeito: Jev 62%, gpt-5.6-luna 70%, gpt-5.6-terra 71%, gpt-6-luna 72%, gpt-6-astra 75%, regras 46%. Por rota: 88% a 92%.
+- **Consequência:** a frase "os três modelos empatam, o Jev vale por ser mais rápido" **estava errada**: na categoria exata o Jev fica 8 a 13 pontos abaixo, embora na rota a diferença seja pequena (88% contra 90% a 92%). O README e o `BENCHMARK_TRIAGEM.md` foram corrigidos. A escolha do triador segue **em aberto**.
+
+### 31. ✅ Triador trocado do Jev para o gpt-5.6-terra (e o que isso desliga)
+- **Decisão:** com a amostra reprodutível (entrada 30), o terra acerta 71% da categoria e 92% da rota, contra 62% e 88% do Jev. O Jev ficou como reserva (e as regras como última).
+- **Consequência técnica:** o terra declara confiança ≥ 0,7 quase sempre, então a **cascata por confiança só vale quando o Jev classifica** (no caso de reserva). No lote de 210 conversas, "cascata sem consenso" foi de 9 casos para 0. A mediana subiu de 3,5 s para 5,4 s.
+- **Risco medido na demo:** os alertas de caso sensível e de injeção agora vêm do modelo. Nas 9 cenas não houve falso alarme, e as regras de código continuam somando ao modelo.
+- **Reversão:** `GOCOLEGA_TRIADOR=jev`.
+
+### 32. ✅ Causa raiz: dois falsos alarmes antes de funcionar
+- **Erro 1:** o primeiro limite (z ≥ 3) apontava um lote isolado (5 de 67 pedidos, z=3,1) que sumia nos cortes seguintes. Eu testo dezenas de grupos por dimensão, e o limite fixo não corrige isso.
+- **Correção 1:** limite de **Bonferroni** (alfa 0,01 dividido pelo número de grupos testados).
+- **Erro 2:** no primeiro dia da base, um lote com 2 problemas em 38 pedidos virou incidente.
+- **Correção 2:** mínimo de **5 casos** além do tamanho mínimo do grupo (30 pedidos).
+- **Resultado conferido sem olhar o futuro:** com dados até 25/08 já aparece a Expressa Já em BA e CE (z=6,9); até 15/09 entra PE; até 10/10, RN e PB. Nenhum lote ou impressora passa pelo teste. Retroteste em 10/10: dos 92 pedidos a caminho no escopo, 45% abriram conversa de atraso ou rastreio depois, contra 22% fora do escopo. A situação do pedido no corte é **aproximada** pelas datas.
+- **Limite:** a taxa de conversa-problema mede o que os clientes reclamaram, não a causa; o analista confirma.
+
+### 33. ✅ Reclame Aqui: a resposta é pública, então vira rascunho
+- **Decisão (revertida em 07/11 por decisão do time do projeto; os documentos do desafio não pedem aprovação):** o desenho original fazia `responder_cliente` virar `rascunho_resposta_publica` com aprovação de uma pessoa. Agora a resposta pública sai direto, marcada `publico=True`, com os mesmos filtros (PII, Verificador). **Risco aceito:** um texto ruim fica público sem revisão; mitigação: texto fixo em suspeita e caso sensível, e o Verificador.
+- **Efeito na medição:** no lote, os casos do Reclame Aqui que antes contavam como "autônomo" agora são rascunhos aguardando aprovação.
+
+### 34. ✅ Vazamento do futuro na troca: o agente via a troca que o atendente fez na própria conversa
+- **Erro:** nas conversas de troca do histórico, 3 de 3 eram negadas com "cada pedido tem direito a 1 troca e ela já foi feita". Em AT108329 a única troca do pedido é a que o atendente registrou **nessa mesma conversa**.
+- **Causa:** `trocas_do_pedido` contava todas as trocas do pedido, inclusive as posteriores ao momento da conversa.
+- **Correção:** só conta trocas com `data_solicitacao` anterior à conversa (há teste com a base completa: zero antes, uma depois). Em AT105149 a negativa continua: havia outra troca três dias antes.
+- **Lição:** o mesmo cuidado vale para qualquer dado de "depois": pagamentos, separação e entrega também são filtrados pela data da conversa.
+
+### 35. ✅ Menos gente: rotas do dia a dia e perguntar em vez de encaminhar
+- **Decisão (pedido do usuário):** o agente resolve o máximo e chama uma pessoa só quando é necessário. Antes, 36% das conversas iam para uma pessoa, quase todas por categorias que o agente não tratava.
+- **O que passou a tratar, seguindo `politicas.csv`:** elogio (agradece); cancelamento e arrependimento (antes da separação cancela; até 7 dias do recebimento reembolsa até R$ 100 e acima disso pede aprovação; depois disso nega com a regra); endereço (antes da separação pede o endereço completo; depois nega); financeiro (cobrança duplicada conferida no gateway, só reembolsa o valor extra); cupom e promoção (confere o cupom na plataforma e usa o motivo de recusa dela); troca de fragrância (1 por pedido, 30 dias, uso de até 20% declarado pelo cliente).
+- **Sem pedido, pergunta o número** em vez de chamar uma pessoa. Sem dado que falta, pergunta ao cliente.
+- **Trava de segurança:** cancelar, reembolsar e trocar exigem pedido explícito no texto; sem isso o agente pergunta.
+- **Segue chamando uma pessoa:** caso sensível, suspeita, valor acima da alçada, pergunta de saúde e dúvida que a ficha do produto não responde.
+- **Efeito na medição:** "resolvida", "sem humano" e "precisa de pessoa" passaram a ter definição fixa no `analisar_lote.py`.
+
+### 36. ✅ Pessoa só em caso sério (segunda rodada, 07/11)
+- **Decisão (pedido do usuário):** "só encaminhe para o humano em caso de necessidade real, tipo saúde ou coisa séria".
+- **Deixaram de ir para uma pessoa e passaram a PERGUNTAR ao cliente:** triagem sem consenso, categoria sem rota, conversa sem pedido e sem categoria clara, dúvida comum sem resposta na base (registra a lacuna), segundo pedido de dinheiro no mesmo pedido. **Passaram a INFORMAR:** pedido cancelado ou devolvido; ação negada pela política no rastreio (explica a regra).
+- **Continuam com pessoa (por serem sérios ou por regra):** caso sensível e pergunta de saúde; suspeita de fraude (Detetive); valor acima da alçada do agente (reenvio/troca > R$ 200, reembolso > R$ 100: a política do desafio exige aprovação do supervisor, não dá para o agente decidir).
+- **Risco aceito:** o agente pode pedir detalhes a quem queria falar com uma pessoa; sem o ciclo de várias mensagens, não medimos quantos desses casos terminam resolvidos. 232 testes passam; 15 foram reescritos para o comportamento novo.
 
 ---
 
@@ -228,10 +273,11 @@ Legenda de status: ✅ resolvido · ⚠️ aberto (lacuna conhecida)
 - ⚠️ **Chamado na transportadora (item 23):** precisão 29%, cobertura 35% contra a prática humana. Calibrar em modo sombra.
 - ⚠️ **RAG sem embeddings:** o proxy não tem endpoint de embeddings (404). A busca é lexical (BM25) e não pega sinônimos.
 - ⚠️ **Autônomo é quase só informação:** no lote final, 43% sem humano, mas 93% destes só informam o cliente; 7% executam reenvio.
-- ⚠️ **Camada de canal não construída:** WhatsApp, e-mail e Reclame Aqui recebem o mesmo tratamento. A resposta pública do Reclame Aqui deveria ser rascunho para aprovação.
+- ⚠️ **Camada de canal parcial:** só o Reclame Aqui tem tratamento próprio (rascunho para aprovação, entrada 33). WhatsApp e e-mail recebem o mesmo tratamento, sem formato nem horário por canal.
 - ⚠️ Teste dedicado para o aviso de falha da triagem (item 9).
 - ⚠️ Elegibilidade do brinde (item 12).
 - ⚠️ Pesos do Detetive e limiar do Jev são **heurísticos**, sem calibração estatística.
-- ⚠️ Só 4 frentes implementadas (Pós-venda + Detetive, Rastreio/Atraso, Dúvida por RAG, Sensível). Causa raiz, proativo e Reclame Aqui ficam como próximos passos.
+- ⚠️ 8 das 11 frentes tocadas, **3 delas parciais**: pós-venda (sem reimpressão e sem pedir foto), Reclame Aqui (rascunho, sem priorização por prazo) e aviso proativo (só prepara; depende de aprovação). Inteiras: triagem, rastreio e atraso, procedência, caso sensível e causa raiz. Há ainda a dúvida por RAG. Faltam Financeiro, colega interno e o relatório automático do dia (hoje o `analisar_lote.py` faz esse papel).
+- ⚠️ **Aviso proativo:** o envio em massa depende da aprovação de uma pessoa (a regra "lista grande passa pelo analista" ficou sem limite numérico); o teto é de 300 clientes por dia. O retroteste aproxima a situação do pedido no corte pelas datas.
 - ⚠️ As ferramentas são **simuladas** sobre os CSVs: nenhuma ação altera sistema real.
-- ⚠️ Os modelos `gpt-6-*` (astra, sol, luna) não entraram no benchmark de triagem.
+- ⚠️ **Triador:** o gpt-5.6-terra classifica (entrada 31). O gpt-6-astra acerta um pouco mais (75% contra 71%), dentro do erro da amostra; trocar exige repetir o lote. Sem confiança utilizável nos modelos de chat, a cascata só vale para o Jev como reserva.

@@ -9,6 +9,7 @@ TABELAS = [
     "anexos_conversas", "trocas_reenvios", "itens_pedido", "produtos", "ferramentas",
     "equipe_atendimento", "chamados_transportadora", "rastreio_portais_transportadoras",
     "pagamentos_gateway", "estornos", "politicas", "tempo_por_conversa",
+    "avaliacoes_csat", "reclame_aqui", "lotes_producao", "maquinas_personalizacao", "cupons", "uso_cupons",
 ]
 
 

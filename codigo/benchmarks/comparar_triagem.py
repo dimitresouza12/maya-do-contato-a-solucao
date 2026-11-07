@@ -32,7 +32,7 @@ from gocolega.ferramentas import mascarar_pii  # noqa: E402
 
 N = int(sys.argv[1]) if len(sys.argv) > 1 else 100
 SEMENTE = int(sys.argv[2]) if len(sys.argv) > 2 else 42
-MODELOS_CHAT = {"luna": modelos.SUB, "terra": modelos.PRINCIPAL}
+MODELOS_CHAT = {"luna": modelos.SUB, "terra": modelos.PRINCIPAL, "gpt6_luna": "gpt-6-luna", "gpt6_astra": "gpt-6-astra"}
 
 
 def norm(s: str) -> str:
@@ -50,6 +50,7 @@ def amostra() -> list[dict]:
     linhas = [l for l in linhas if l["texto"] and l["texto"].strip()]
     for l in linhas:
         l["tag"] = norm(l["tag"])
+    linhas.sort(key=lambda l: l["conversation_id"])  # o group by nao tem ordem fixa: sem isso a semente nao reproduz a amostra
     random.Random(SEMENTE).shuffle(linhas)
     return linhas[:N]
 
@@ -113,7 +114,7 @@ def wilson(acertos, n, z=1.96):
 def rodar(l):
     t = l["texto"]
     return {"id": l["conversation_id"], "tag": l["tag"], "marca": l["marca"], "canal": l["canal"],
-            "jev": jev(t), "luna": chat(MODELOS_CHAT["luna"], t), "terra": chat(MODELOS_CHAT["terra"], t), "regras": regras(t)}
+            "jev": jev(t), **{n: chat(m, t) for n, m in MODELOS_CHAT.items()}, "regras": regras(t)}
 
 
 def main():
@@ -124,7 +125,7 @@ def main():
         res = list(ex.map(rodar, amo))
     print(f"Tempo total: {time.time() - ini:.0f}s")
 
-    nomes = ["jev", "luna", "terra", "regras"]
+    nomes = ["jev"] + list(MODELOS_CHAT) + ["regras"]
     with open(os.path.join(RAIZ, "codigo", "benchmarks", "triagem_resultados.csv"), "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["conversation_id", "gabarito", "marca", "canal"] + [f"{n}_{c}" for n in nomes for c in ("cat", "conf")])
@@ -146,7 +147,7 @@ def main():
               f"{len(res)-len(validos)} | {statistics.mean(seg) if seg else 0:.2f}s | {p95:.2f}s |")
 
     print("\nCalibracao da confianca (acerto quando confianca >= 0,7 contra < 0,7):")
-    for n in nomes[:3]:
+    for n in nomes[:-1]:
         v = [r for r in res if "cat" in r[n]]
         alta = [r for r in v if r[n]["conf"] >= 0.7]
         baixa = [r for r in v if r[n]["conf"] < 0.7]
@@ -158,19 +159,19 @@ def main():
     for (g, p), c in erros.most_common(6):
         print(f"  {g} -> {p}: {c}")
 
-    print("\nAcerto por categoria do gabarito (jev | luna | terra | regras):")
+    print(f"\nAcerto por categoria do gabarito ({' | '.join(nomes)}):")
     por = {}
     for r in res:
-        d = por.setdefault(r["tag"], [0, 0, 0, 0, 0])
+        d = por.setdefault(r["tag"], [0] * (len(nomes) + 1))
         d[0] += 1
         for i, n in enumerate(nomes):
             d[i + 1] += ("cat" in r[n] and norm(r[n]["cat"]) == r["tag"])
     for tag, d in sorted(por.items(), key=lambda x: -x[1][0]):
-        print(f"  {tag:20s} n={d[0]:3d} | {d[1]:3d} | {d[2]:3d} | {d[3]:3d} | {d[4]:3d}")
+        print(f"  {tag:20s} n={d[0]:3d} | " + " | ".join(f"{x:3d}" for x in d[1:]))
 
-    print("\nConcordam os tres (jev, luna, terra) e acertam:",
-          sum(all("cat" in r[n] and norm(r[n]["cat"]) == r["tag"] for n in nomes[:3]) for r in res), "/", len(res))
-    print("Nenhum dos quatro acertou:",
+    print("\nConcordam os tres originais (jev, luna, terra) e acertam:",
+          sum(all("cat" in r[n] and norm(r[n]["cat"]) == r["tag"] for n in ("jev", "luna", "terra")) for r in res), "/", len(res))
+    print("Nenhum dos classificadores acertou:",
           sum(all(("cat" not in r[n]) or norm(r[n]["cat"]) != r["tag"] for n in nomes) for r in res), "/", len(res))
     print("\n" + llm.linha_custo())
 

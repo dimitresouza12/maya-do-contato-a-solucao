@@ -17,6 +17,20 @@ linhas = list(csv.DictReader(open(os.path.join(RAIZ, "codigo", "benchmarks", "lo
 hist = [l for l in linhas if l["origem"] == "historico"]
 print(f"Casos: {len(linhas)} (fila {sum(l['origem'] == 'fila' for l in linhas)}, historico {len(hist)})")
 
+print("\n## Quanto precisa de gente (definicoes fixas, para nao mudar a regua)")
+RESOLVIDO = {"autonomo", "fora_da_politica"}            # o agente decidiu e comunicou (inclui negar com a regra)
+SEM_HUMANO = RESOLVIDO | {"aguardando_cliente"}         # + pediu algo ao cliente: ainda nao ha pessoa envolvida
+HUMANO = {"escalado", "aguardando_supervisor", "aguardando_aprovacao", "suspeita", "sensivel"}
+d = Counter(l["desfecho"] for l in linhas)
+n = len(linhas)
+print(f"  resolvidas pelo agente (autonomo + fora_da_politica): {sum(d[k] for k in RESOLVIDO)} ({100 * sum(d[k] for k in RESOLVIDO) / n:.0f}%)")
+print(f"  sem humano (resolvidas + aguardando o cliente):       {sum(d[k] for k in SEM_HUMANO)} ({100 * sum(d[k] for k in SEM_HUMANO) / n:.0f}%)")
+print(f"  precisam de uma pessoa:                               {sum(d[k] for k in HUMANO)} ({100 * sum(d[k] for k in HUMANO) / n:.0f}%)")
+for k in sorted(HUMANO, key=lambda k: -d[k]):
+    if d[k]:
+        print(f"      {k:22s} {d[k]:3d}")
+print("  quem sao os 'escalado' (categoria da triagem):", dict(Counter(l["categoria"] for l in linhas if l["desfecho"] == "escalado")))
+
 print("\n## Desfecho por categoria da triagem (todos)")
 por = defaultdict(Counter)
 for l in linhas:
