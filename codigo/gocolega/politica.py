@@ -1,4 +1,4 @@
-"""Policy Engine: regras de alcada, prazo e papel em CODIGO (nao confiadas ao LLM).
+"""Policy Engine: regras de limite, prazo e papel em CODIGO (nao confiadas ao LLM).
 
 Fonte: politicas.csv / parametros.md do evento.
 """
@@ -67,10 +67,10 @@ def avaliar_acao(
     if limite is not None and valor > limite and not aprovacao_id:
         return Decisao(
             "precisa_aprovacao",
-            f"Valor R$ {valor:.2f} acima da alcada do atendente (R$ {limite:.2f})",
+            f"Valor R$ {valor:.2f} acima do limite do atendente (R$ {limite:.2f})",
             "limites_por_papel.atendente.acima_do_limite",
         )
-    return Decisao("permitido", "Dentro da politica e da alcada", "ok")
+    return Decisao("permitido", "Dentro da politica e do limite", "ok")
 
 
 def pode_aprovar(aprovador: str, solicitante: str) -> Decisao:

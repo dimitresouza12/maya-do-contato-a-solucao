@@ -307,7 +307,14 @@ function montar() {
   r.append(el('p', 'nota', 'Amostra pequena: serve para ver o comportamento, não para prometer um percentual. Rascunhos do Reclame Aqui contam como "precisa de pessoa" por desenho (resposta pública exige aprovação).'));
 }
 montarFiltros();
-api('/api/estado').then(e => { ESTADO = e; montar(); }).catch(e => document.body.append(el('p', 'erro', 'Não consegui carregar: ' + e.message)));
+// Atalhos pela URL, para abrir a demo "no caso" (?aba=fb, ?sel=AT116568, ?aba=time&pedido=4): abrir a tela ja pronta.
+function abrirDaUrl() {
+  const q = new URLSearchParams(location.search);
+  if (q.get('aba')) { const b = document.querySelector(`#abas button[data-aba="${q.get('aba')}"]`); if (b) b.click(); }
+  if (q.get('sel')) { SEL = q.get('sel'); carregarDetalhe(); }
+  if (q.get('pedido')) { const c = ESTADO.colega[Number(q.get('pedido'))]; if (c) { $('#ctexto').value = c.texto; $('#area').value = c.area; enviarColega(); } }
+}
+api('/api/estado').then(e => { ESTADO = e; montar(); abrirDaUrl(); }).catch(e => document.body.append(el('p', 'erro', 'Não consegui carregar: ' + e.message)));
 atualizar(); setInterval(atualizar, 1500);
 </script>
 </body>

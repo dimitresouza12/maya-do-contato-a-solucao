@@ -13,10 +13,10 @@ Mensagem → triagem (gpt-5.6-terra; reserva Jev e regras) → rota
    ├─ rastreio / atraso · cancelamento · endereço · financeiro · troca · cupom · elogio → regras da política
    ├─ dúvida de produto → busca na ficha (BM25), responde só com fonte citada
    ├─ pedido de colega no canal do time (Slack simulado) → consulta agregada, nunca dado pessoal
-   └─ saúde · suspeita de fraude · valor acima da alçada → PESSOA, com contexto e rascunho
+   └─ saúde · suspeita de fraude · valor acima do limite → PESSOA, com contexto e rascunho
 Toda resposta passa por um Verificador (números e promessas precisam de apoio nos fatos).
 ```
-- **O modelo propõe, o código decide.** Alçada, prazo, privacidade e segregação ficam em código testável, não em prompt.
+- **O modelo propõe, o código decide.** Limite, prazo, privacidade e segregação ficam em código testável, não em prompt.
 - Agentes (Detetive, Guardião, Redator, Verificador) conversam por um barramento de mensagens ([`dialogo.py`](codigo/gocolega/dialogo.py)).
 - Quando falta informação, o agente **pergunta ao cliente** em vez de chamar uma pessoa.
 
@@ -38,7 +38,7 @@ Lote de **60 conversas reais** (20 da fila aberta + 40 do histórico), modelos r
 |---|---|
 | Resolvidas pelo agente (inclui negativas com a regra da política) | **63%** |
 | Sem humano (soma as que aguardam resposta do cliente) | **92%** |
-| Precisam de uma pessoa | **8%** (saúde, suspeita, acima da alçada) |
+| Precisam de uma pessoa | **8%** (saúde, suspeita, acima do limite) |
 | Tempo do agente por conversa | **7 s** em média (humano: mediana de 16 min no WhatsApp) |
 
 Outros números: o Detetive sinalizou 10% das conversas com foto; a causa raiz acha a transportadora com problema por estado; 232 testes comuns, difíceis e estranhos.

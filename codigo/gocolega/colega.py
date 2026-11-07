@@ -1,7 +1,7 @@
 """Canal do time (Slack, simulado): pedidos de colegas de outras areas (logistica, qualidade, marketing, comercial, supervisao).
 
 parametros.md: "o ambiente entrega esses pedidos e o agente responde com `responder_colaborador`. Pedido de colaborador nao muda a
-politica: o que passa da alcada continua precisando de aprovacao."
+politica: o que passa do limite continua precisando de aprovacao."
 
 Principios (os mesmos do atendimento): o CODIGO consulta a base e decide; o texto sai com numeros EXATOS da consulta (sem modelo,
 sem invencao). Consultas devolvem so agregados, nunca CPF, telefone ou cartao. Pedido para EXECUTAR dinheiro (reembolso,

@@ -2,7 +2,7 @@
 
 Modelos (ver modelos.py): Jev na triagem; modelo PRINCIPAL (terra) roteia casos ambiguos e resume para o
 supervisor; modelo SUB (luna) julga a foto e escreve as respostas. O modelo PROPOE; o codigo VALIDA:
-alcada, prazo, papel e segregacao ficam no Policy Engine. Sem token, tudo roda so com codigo.
+limite, prazo, papel e segregacao ficam no Policy Engine. Sem token, tudo roda so com codigo.
 """
 import re
 from dataclasses import dataclass, field
@@ -159,7 +159,7 @@ def _encaminhar(r: Resultado, ferr: Ferramentas, cid: str, area: str, assunto: s
 
 def _esclarecer(r: Resultado, ferr: Ferramentas, cid: str, motivo: str, fatos: str | None = None, fallback: str | None = None):
     """Quando falta clareza, o agente PERGUNTA ao cliente em vez de chamar uma pessoa. Uma pessoa so entra em caso serio
-    (saude, suspeita de fraude, valor acima da alcada); ver DIARIO 36."""
+    (saude, suspeita de fraude, valor acima do limite); ver DIARIO 36."""
     fatos = fatos or ("Nao ficou claro o que o cliente precisa. Pedir que conte com um pouco mais de detalhe o que aconteceu "
                       "e informe o numero do pedido, se tiver.")
     fallback = fallback or ("Quero te ajudar direitinho, mas nao consegui entender bem o que voce precisa. Pode me contar com mais "
@@ -419,7 +419,7 @@ def _pos_venda(r: Resultado, ferr: Ferramentas, conv: dict, pedido: dict, cat_po
             "Reenvio sem custo aprovado e executado. O rastreio sera informado assim que o pedido sair.",
             "Resolvido! Vamos reenviar o seu pedido sem custo e te avisamos assim que sair. Obrigado pela paciencia."))
         r.desfecho = "autonomo"
-        r.p(f"Reenvio de R$ {valor:.2f} executado sozinho, dentro da alcada.")
+        r.p(f"Reenvio de R$ {valor:.2f} executado sozinho, dentro do limite.")
     elif d.resultado == "precisa_aprovacao":
         apr = ferr.solicitar_aprovacao("reenviar_produto", oid, valor, f"{d.motivo}. {_resumo(dos, pedido, texto, cid, agora)}")
         ferr.responder_cliente(cid, _texto(r,
@@ -427,7 +427,7 @@ def _pos_venda(r: Resultado, ferr: Ferramentas, conv: dict, pedido: dict, cat_po
             "O caso depende de aprovacao interna. Nao ha prazo garantido alem de 'em breve'.",
             "Seu caso foi encaminhado para aprovacao e voltamos com a resposta em breve."))
         r.desfecho = "aguardando_supervisor"
-        r.p(f"Acima da alcada: pedi aprovacao {apr} ao supervisor, com o dossie anexado.")
+        r.p(f"Acima do limite: pedi aprovacao {apr} ao supervisor, com o dossie anexado.")
     else:
         ferr.responder_cliente(cid, "Analisamos o seu pedido e, pela nossa politica, nao conseguimos seguir com esse reenvio. "
                                     f"Motivo: {d.motivo}.")
@@ -512,7 +512,7 @@ def _rastreio(r: Resultado, ferr: Ferramentas, pedido: dict, texto: str = ""):
         apr = ferr.solicitar_aprovacao(acao, oid, valor, f"{d.motivo}. {plano.resumo}")
         ferr.responder_cliente(cid, "Registramos a sua escolha e ela foi encaminhada para aprovacao. Voltamos em breve.")
         r.desfecho = "aguardando_supervisor"
-        r.p(f"Acima da alcada: pedi aprovacao {apr} ao supervisor.")
+        r.p(f"Acima do limite: pedi aprovacao {apr} ao supervisor.")
     else:
         ferr.negar_por_politica(cid, f"{acao}.{d.regra}")
         ferr.responder_cliente(cid, _texto(r, "explicar com gentileza que a politica nao permite essa acao agora",

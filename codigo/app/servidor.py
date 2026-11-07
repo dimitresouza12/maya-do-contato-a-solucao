@@ -34,12 +34,12 @@ from gocolega.orquestrador import PRAZO_HUMANO, tratar  # noqa: E402
 
 PORTA = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
 ROTULO = {"autonomo": "Resolvido pelo agente", "aguardando_cliente": "Aguardando resposta do cliente", "fora_da_politica": "Negado pela política, com a regra",
-          "aguardando_supervisor": "Acima da alçada: aprovação do supervisor", "aguardando_aprovacao": "Resposta pública: aguarda aprovação",
+          "aguardando_supervisor": "Acima do limite: aprovação do supervisor", "aguardando_aprovacao": "Resposta pública: aguarda aprovação",
           "suspeita": "Sinalizado como suspeita", "sensivel": "Caso sensível (saúde)", "escalado": "Passou para uma pessoa"}
 RESOLVIDAS, AGUARDA, PESSOA = {"autonomo", "fora_da_politica"}, {"aguardando_cliente"}, {"escalado", "aguardando_supervisor", "aguardando_aprovacao", "suspeita", "sensivel"}
 INTERNAS = {"classificar_conversa", "responder_cliente", "rascunho_resposta_publica"}
 MARCA_RASCUNHO = "[rascunho sugerido, revisar antes de enviar] "
-MOTIVO = {"aguardando_supervisor": "O valor passa da alçada do agente: o supervisor precisa aprovar.",
+MOTIVO = {"aguardando_supervisor": "O valor passa do limite do agente: o supervisor precisa aprovar.",
           "suspeita": "Reclamação sinalizada pelo Detetive de Procedência: o supervisor decide, o cliente recebeu resposta neutra.",
           "sensivel": "Possível reação adversa (saúde): registrar cosmetovigilância em até 24 h. O cliente já foi orientado a suspender o uso."}
 

@@ -1,6 +1,6 @@
 """Rotas do dia a dia que antes iam todas para uma pessoa: elogio, cancelamento, endereco, financeiro,
 cupom e promocao, troca. Cada uma segue a regra de politicas.csv (secao 'categorias') e so chama um humano
-quando a politica exige (valor acima da alcada) ou quando falta informacao que so uma pessoa tem.
+quando a politica exige (valor acima do limite) ou quando falta informacao que so uma pessoa tem.
 
 Principios (os mesmos do resto da Maya): o codigo decide, o modelo so redige; nunca age sem pedido claro do
 cliente (cancelar, reembolsar e trocar exigem a intencao explicita no texto); sem o dado que falta, PERGUNTA ao
@@ -141,13 +141,13 @@ def _reembolso_ou_aprovacao(r, ferr, cid, pedido, escrever, motivo: str, valor: 
         fatos = f"{situacao} Reembolso de {_brl(valor)} registrado para o pedido {oid}."
         ferr.responder_cliente(cid, escrever(r, "informar o reembolso", fatos,
                                              f"Pronto, vamos reembolsar {_brl(valor)} do pedido {oid}. Voce recebera a confirmacao em seguida."))
-        _fim(r, "autonomo", f"Reembolso de {_brl(valor)} executado (dentro da alcada de {_brl(LIMITE_REEMBOLSO)}).")
+        _fim(r, "autonomo", f"Reembolso de {_brl(valor)} executado (dentro do limite de {_brl(LIMITE_REEMBOLSO)}).")
     else:
         aprov = ferr.solicitar_aprovacao("reembolso", oid, valor, f"{motivo}: {situacao}")
         ferr.responder_cliente(cid, escrever(r, "informar que o reembolso foi encaminhado para aprovacao",
-                                             f"{situacao} O valor de {_brl(valor)} passa da alcada e precisa de aprovacao.",
+                                             f"{situacao} O valor de {_brl(valor)} passa do limite e precisa de aprovacao.",
                                              "Registrei o seu pedido de reembolso e ele foi encaminhado para aprovacao. Voltamos em breve."))
-        _fim(r, "aguardando_supervisor", f"Reembolso de {_brl(valor)} acima da alcada ({_brl(LIMITE_REEMBOLSO)}): pedi aprovacao ({aprov}).")
+        _fim(r, "aguardando_supervisor", f"Reembolso de {_brl(valor)} acima do limite ({_brl(LIMITE_REEMBOLSO)}): pedi aprovacao ({aprov}).")
     return r, ferr
 
 
@@ -383,9 +383,9 @@ def troca(r, ferr, cid, pedido, texto, agora, escrever):
     valor = float(pedido.get("valor") or 0)
     if valor > LIMITE_TROCA:
         aprov = ferr.solicitar_aprovacao("troca", oid, valor, f"Troca por {novo['nome']}")
-        ferr.responder_cliente(cid, escrever(r, "informar que a troca foi encaminhada para aprovacao", f"A troca do pedido {oid} passa da alcada e precisa de aprovacao.",
+        ferr.responder_cliente(cid, escrever(r, "informar que a troca foi encaminhada para aprovacao", f"A troca do pedido {oid} passa do limite e precisa de aprovacao.",
                                              "Registrei a sua troca e ela foi encaminhada para aprovacao. Voltamos em breve."))
-        _fim(r, "aguardando_supervisor", f"Troca de {_brl(valor)} acima da alcada ({_brl(LIMITE_TROCA)}): pedi aprovacao ({aprov}).")
+        _fim(r, "aguardando_supervisor", f"Troca de {_brl(valor)} acima do limite ({_brl(LIMITE_TROCA)}): pedi aprovacao ({aprov}).")
         return r, ferr
     ferr.trocar_produto(oid, novo["sku"], valor)
     fatos = f"Troca do pedido {oid} aprovada: {novo['nome']}, dentro do prazo, com uso declarado de ate 20%, 1 troca por pedido."
