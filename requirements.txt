@@ -1,7 +1,3 @@
 duckdb
-pandas
-openai
-mcp
 python-dotenv
-python-telegram-bot
 pytest

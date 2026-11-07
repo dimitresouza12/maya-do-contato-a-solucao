@@ -73,6 +73,14 @@ def _brl(v: float) -> str:
     return "R$ " + f"{float(v):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 
+def _codigos_cupom() -> list[str]:
+    """Codigos de cupom da base; a amostra do repositorio nao traz a tabela, e nesse caso nao ha cupom para reconhecer."""
+    try:
+        return [x["codigo"] for x in dados.consulta("select codigo from cupons")]
+    except Exception:
+        return []
+
+
 def _valor_do_texto(texto: str) -> float | None:
     m = VALOR.search(texto)
     return float(m.group(1).replace(".", "").replace(",", ".")) if m else None
@@ -192,7 +200,7 @@ def tratar_colega(pedido_id: str, area: str, texto: str, ferr: Ferramentas | Non
     # 4) Consultas (somente leitura, agregadas)
     elif LOTE.search(texto) or re.search(r"qualidade|lote", texto, re.I):
         r.intencao, r.desfecho, r.resposta = "consulta_qualidade", "respondido", _qualidade(r, texto)
-    elif re.search(r"cupom", texto, re.I) or any(c.lower() in texto.lower() for c in [x["codigo"] for x in dados.consulta("select codigo from cupons")]):
+    elif re.search(r"cupom", texto, re.I) or any(c.lower() in texto.lower() for c in _codigos_cupom()):
         r.intencao, r.desfecho, r.resposta = "consulta_cupom", "respondido", _marketing(r, texto)
     elif CHAMADOS.search(texto) and not re.search(r"previs[aã]o de chegada|cole[cç][aã]o|lan[cç]amento", texto, re.I):
         r.intencao, r.desfecho, r.resposta = "consulta_logistica", "respondido", _logistica(r, texto, ferr.agora)

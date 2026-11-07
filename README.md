@@ -23,7 +23,7 @@ Toda resposta passa por um Verificador (números e promessas precisam de apoio n
 ## Rodar
 ```
 pip install -r requirements.txt
-python -m pytest                     # 232 testes (com a base completa)
+python -m pytest                     # 232 testes com a base completa; só com a amostra, 218 passam e 14 são pulados
 python codigo/demo.py                # 11 cenas no terminal
 python codigo/app/servidor.py        # monitor local: http://127.0.0.1:8765
 ```
