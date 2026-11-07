@@ -2,7 +2,7 @@
 
 **Agente de IA para o atendimento da Gocase e da GoBeauté: responde sozinho o que a política permite, confere se a reclamação procede antes de agir e só chama uma pessoa em caso sério.**
 
-*(Maya é o nome do agente; o pacote Python e o repositório mantêm o nome `gocolega`.)*
+*(Maya é o nome do agente; só o pacote Python por dentro mantém o nome interno `gocolega`.)*
 
 GoHacks Talent 2026, Desafio 1. Feito por uma pessoa em um dia, com as bases fictícias do evento. Projeto de hackathon, não um produto do Gogroup.
 
