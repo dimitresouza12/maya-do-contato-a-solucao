@@ -1,0 +1,101 @@
+conversation_id,gabarito,marca,canal,jev_cat,jev_conf,luna_cat,luna_conf,terra_cat,terra_conf,regras_cat,regras_conf
+AT111291,Outros,Lescent,email,Rastreio,1,Rastreio,0.99,Rastreio,0.98,Outros,0.6
+AT110975,Rastreio,Yenzah,email,Endereco,1,Endereco,0.99,Endereco,0.99,Endereco,0.6
+AT115121,Cancelamento,Kokeshi,email,Reclamacao produto,0.44,Troca,0.98,Troca,0.96,Outros,0.6
+AT107725,Troca,Ápice,whatsapp,Avaria,0.82,Avaria,0.99,Avaria,0.99,Outros,0.6
+AT108543,Rastreio,Yenzah,whatsapp,Rastreio,0.82,Atraso,0.99,Rastreio,0.93,Atraso,0.6
+AT108261,Duvida,By Samia,whatsapp,Duvida,1,Duvida,0.99,Duvida,0.99,Outros,0.6
+AT112980,Avaria,Ápice,email,Avaria,0.9,Avaria,0.99,Avaria,0.99,Avaria,0.6
+AT108770,Produto faltando,Kokeshi,email,Produto faltando,0.84,Produto faltando,0.98,Produto faltando,0.72,Avaria,0.6
+AT109526,Financeiro,Lescent,whatsapp,Financeiro,0.99,Financeiro,0.99,Financeiro,0.99,Financeiro,0.6
+AT115887,Rastreio,Yenzah,whatsapp,Rastreio,0.99,Rastreio,0.99,Rastreio,0.98,Outros,0.6
+AT104945,Duvida,Yenzah,email,Rastreio,0.97,Rastreio,0.99,Rastreio,0.93,Outros,0.6
+AT111860,Financeiro,Lescent,whatsapp,Financeiro,0.97,Financeiro,0.99,Financeiro,0.99,Outros,0.6
+AT111478,Atraso,By Samia,reclame_aqui,Atraso,1,Atraso,0.99,Atraso,0.99,Atraso,0.6
+AT106196,Atraso,Gocase,whatsapp,Rastreio,0.98,Rastreio,0.99,Rastreio,0.93,Outros,0.6
+AT113405,Atraso,Rituária,email,Atraso,0.99,Atraso,0.99,Atraso,0.99,Outros,0.6
+AT115520,Cancelamento,Gocase,whatsapp,Cancelamento,1,Cancelamento,0.99,Cancelamento,0.99,Cancelamento,0.6
+AT116028,Produto faltando,By Samia,whatsapp,Produto faltando,0.92,Produto faltando,0.99,Produto faltando,0.98,Produto faltando,0.6
+AT106374,Duvida,Gocase,whatsapp,Atraso,0.79,Atraso,0.99,Atraso,0.98,Outros,0.6
+AT115928,Atraso,Gocase,reclame_aqui,Atraso,0.97,Atraso,0.99,Atraso,0.98,Atraso,0.6
+AT107363,Atraso,Yenzah,email,Atraso,1,Atraso,0.99,Atraso,0.99,Outros,0.6
+AT107967,Outros,Kokeshi,email,Atraso,0.97,Atraso,0.99,Atraso,0.99,Rastreio,0.6
+AT106040,Duvida,Gocase,email,Rastreio,0.97,Rastreio,0.99,Rastreio,0.93,Outros,0.6
+AT108071,Troca,Ápice,email,Outros,0.24,Troca,0.98,Troca,0.98,Outros,0.6
+AT107579,Rastreio,Ápice,whatsapp,Atraso,0.96,Atraso,0.98,Atraso,0.93,Atraso,0.6
+AT104638,Rastreio,Yenzah,whatsapp,Rastreio,1,Rastreio,0.99,Rastreio,0.99,Rastreio,0.6
+AT109535,Cancelamento,Rituária,whatsapp,Reclamacao produto,0.34,Troca,0.98,Troca,0.96,Outros,0.6
+AT109229,Rastreio,Rituária,whatsapp,Rastreio,0.84,Atraso,0.99,Atraso,0.98,Atraso,0.6
+AT116277,Duvida,Yenzah,reclame_aqui,Atraso,0.5,Rastreio,0.91,Rastreio,0.93,Rastreio,0.6
+AT114421,Duvida,Ápice,whatsapp,Duvida,1,Duvida,0.99,Duvida,0.99,Outros,0.6
+AT111480,Duvida,Yenzah,whatsapp,Rastreio,0.61,Rastreio,0.96,Rastreio,0.93,Outros,0.6
+AT113310,Cancelamento,By Samia,whatsapp,Financeiro,0.65,Cancelamento,0.98,Cancelamento,0.98,Outros,0.6
+AT112954,Outros,Kokeshi,whatsapp,Rastreio,1,Rastreio,0.99,Rastreio,0.99,Rastreio,0.6
+AT110190,Outros,Gocase,whatsapp,Duvida,1,Duvida,0.99,Duvida,0.99,Outros,0.6
+AT110536,Financeiro,Yenzah,whatsapp,Financeiro,0.9,Financeiro,0.98,Financeiro,0.98,Financeiro,0.6
+AT111099,Avaria,Gocase,whatsapp,Reclamacao produto,0.37,Avaria,0.98,Avaria,0.93,Avaria,0.6
+AT110782,Duvida,Gocase,email,Endereco,0.62,Duvida,0.99,Duvida,0.98,Outros,0.6
+AT107922,Atraso,Ápice,whatsapp,Atraso,0.99,Atraso,0.99,Atraso,0.99,Outros,0.6
+AT112680,Elogio,Gocase,email,Elogio,1,Elogio,0.99,Elogio,0.99,Outros,0.6
+AT115490,Reclamacao produto,Lescent,reclame_aqui,Produto faltando,0.73,Produto faltando,0.99,Produto faltando,0.93,Produto faltando,0.6
+AT110582,Duvida,Ápice,whatsapp,Endereco,1,Endereco,0.99,Endereco,0.99,Endereco,0.6
+AT105305,Promocao,Lescent,whatsapp,Promocao,0.62,Promocao,0.96,Promocao,0.85,Promocao,0.6
+AT106325,Produto faltando,Lescent,email,Produto faltando,1,Produto faltando,0.99,Produto faltando,0.99,Outros,0.6
+AT114724,Atraso,Barbour's,whatsapp,Rastreio,1,Rastreio,0.99,Rastreio,0.99,Rastreio,0.6
+AT112197,Endereco,Gocase,whatsapp,Endereco,1,Endereco,0.99,Endereco,0.99,Endereco,0.6
+AT112283,Rastreio,By Samia,whatsapp,Rastreio,0.95,Rastreio,0.99,Rastreio,0.93,Outros,0.6
+AT115180,Elogio,Yenzah,whatsapp,Elogio,1,Elogio,0.99,Elogio,0.99,Outros,0.6
+AT110387,Cancelamento,Rituária,whatsapp,Financeiro,0.88,Financeiro,0.99,Financeiro,0.99,Outros,0.6
+AT114529,Rastreio,Lescent,whatsapp,Atraso,0.82,Atraso,0.99,Atraso,0.97,Outros,0.6
+AT105941,Avaria,Gocase,whatsapp,Avaria,0.54,Avaria,0.99,Troca,0.93,Avaria,0.6
+AT108406,Troca,Barbour's,email,Reclamacao produto,0.71,Reclamacao produto,0.98,Reclamacao produto,0.93,Outros,0.6
+AT106695,Endereco,Barbour's,email,Endereco,1,Endereco,0.99,Endereco,0.99,Endereco,0.6
+AT114961,Avaria,Kokeshi,email,Produto faltando,1,Produto faltando,0.99,Produto faltando,0.99,Produto faltando,0.6
+AT106913,Promocao,Gocase,whatsapp,Promocao,0.68,Promocao,0.98,Promocao,0.93,Promocao,0.6
+AT110538,Rastreio,Gocase,whatsapp,Atraso,0.85,Atraso,0.99,Atraso,0.95,Rastreio,0.6
+AT111019,Financeiro,Barbour's,whatsapp,Financeiro,0.89,Financeiro,0.99,Financeiro,0.98,Financeiro,0.6
+AT114168,Rastreio,Ápice,whatsapp,Rastreio,0.94,Rastreio,0.99,Rastreio,0.97,Rastreio,0.6
+AT110983,Endereco,Kokeshi,email,Rastreio,1,Rastreio,0.99,Rastreio,0.98,Rastreio,0.6
+AT107307,Avaria,Yenzah,email,Avaria,0.96,Avaria,0.99,Avaria,0.99,Avaria,0.6
+AT104712,Endereco,Auá,reclame_aqui,Atraso,0.64,Rastreio,0.98,Rastreio,0.91,Rastreio,0.6
+AT110971,Rastreio,By Samia,whatsapp,Rastreio,0.5,Atraso,0.98,Rastreio,0.96,Rastreio,0.6
+AT114902,Rastreio,Kokeshi,whatsapp,Atraso,1,Atraso,0.99,Atraso,0.99,Atraso,0.6
+AT107195,Atraso,Yenzah,email,Atraso,1,Atraso,0.99,Atraso,0.99,Atraso,0.6
+AT113684,Atraso,Gocase,whatsapp,Atraso,0.89,Atraso,0.99,Atraso,0.98,Outros,0.6
+AT106181,Endereco,Gocase,email,Endereco,1,Endereco,0.99,Endereco,0.99,Outros,0.6
+AT114552,Elogio,Ápice,whatsapp,Elogio,1,Elogio,0.99,Elogio,0.99,Outros,0.6
+AT109633,Cancelamento,By Samia,whatsapp,Reclamacao produto,0.68,Troca,0.98,Troca,0.93,Outros,0.6
+AT116409,Elogio,Gocase,whatsapp,Elogio,1,Elogio,0.99,Elogio,0.99,Outros,0.6
+AT108828,Outros,Auá,whatsapp,Atraso,0.98,Atraso,0.99,Atraso,0.98,Rastreio,0.6
+AT110737,Outros,Lescent,whatsapp,Reclamacao produto,0.82,Reclamacao produto,0.99,Reclamacao produto,0.98,Outros,0.6
+AT108029,Outros,Ápice,whatsapp,Atraso,0.94,Atraso,0.99,Atraso,0.93,Outros,0.6
+AT108075,Rastreio,Ápice,email,Atraso,0.97,Atraso,0.99,Atraso,0.98,Rastreio,0.6
+AT108003,Rastreio,Rituária,whatsapp,Atraso,0.7,Atraso,0.98,Atraso,0.93,Atraso,0.6
+AT106874,Produto faltando,Gocase,reclame_aqui,Produto faltando,1,Produto faltando,0.99,Produto faltando,0.98,Produto faltando,0.6
+AT115826,Avaria,Gocase,whatsapp,Reclamacao produto,0.69,Troca,0.98,Troca,0.93,Outros,0.6
+AT113060,Duvida,Barbour's,email,Duvida,0.99,Duvida,0.99,Duvida,0.98,Outros,0.6
+AT109469,Troca,Barbour's,whatsapp,Troca,1,Troca,0.99,Troca,0.99,Troca,0.6
+AT111804,Reclamacao produto,Gocase,email,Troca,0.46,Avaria,0.99,Troca,0.93,Avaria,0.6
+AT106178,Rastreio,Rituária,whatsapp,Rastreio,0.54,Rastreio,0.98,Rastreio,0.93,Outros,0.6
+AT107704,Promocao,Gocase,whatsapp,Promocao,0.99,Promocao,0.99,Promocao,0.99,Promocao,0.6
+AT111191,Atraso,Ápice,whatsapp,Atraso,0.91,Atraso,0.99,Atraso,0.99,Atraso,0.6
+AT106079,Financeiro,Ápice,whatsapp,Financeiro,1,Financeiro,0.99,Financeiro,0.99,Financeiro,0.6
+AT105283,Duvida,Lescent,email,Duvida,1,Duvida,0.99,Duvida,0.99,Outros,0.6
+AT114138,Avaria,Kokeshi,whatsapp,Produto faltando,1,Produto faltando,0.99,Produto faltando,0.99,Produto faltando,0.6
+AT113753,Rastreio,Ápice,whatsapp,Atraso,0.99,Atraso,0.99,Atraso,0.99,Atraso,0.6
+AT108307,Reclamacao produto,Yenzah,email,Duvida,1,Duvida,0.99,Duvida,0.99,Outros,0.6
+AT108122,Atraso,By Samia,whatsapp,Atraso,1,Atraso,0.99,Atraso,0.99,Atraso,0.6
+AT110288,Avaria,Gocase,reclame_aqui,Avaria,0.85,Avaria,0.99,Avaria,0.99,Avaria,0.6
+AT115977,Produto faltando,Kokeshi,email,Produto faltando,0.84,Produto faltando,0.99,Produto faltando,0.98,Produto faltando,0.6
+AT110739,Atraso,Auá,email,Rastreio,0.37,Atraso,0.98,Atraso,0.93,Outros,0.6
+AT111553,Atraso,Gocase,whatsapp,Rastreio,0.68,Rastreio,0.83,Rastreio,0.78,Endereco,0.6
+AT110939,Outros,Gocase,email,Cancelamento,1,Cancelamento,0.96,Cancelamento,0.9,Cancelamento,0.6
+AT112375,Troca,Ápice,reclame_aqui,Avaria,0.98,Avaria,0.99,Avaria,0.99,Avaria,0.6
+AT105127,Atraso,Rituária,whatsapp,Rastreio,0.56,Atraso,0.98,Atraso,0.93,Rastreio,0.6
+AT110185,Avaria,Gocase,whatsapp,Avaria,0.6,Avaria,0.99,Avaria,0.99,Avaria,0.6
+AT116536,Produto faltando,Yenzah,whatsapp,Produto faltando,1,Produto faltando,0.99,Produto faltando,0.99,Outros,0.6
+AT112794,Rastreio,Kokeshi,whatsapp,Rastreio,0.74,Atraso,0.98,Rastreio,0.96,Rastreio,0.6
+AT109706,Duvida,Auá,whatsapp,Rastreio,0.52,Rastreio,0.98,Rastreio,0.93,Outros,0.6
+AT110088,Cancelamento,Gocase,whatsapp,Cancelamento,1,Cancelamento,1.0,Cancelamento,0.99,Cancelamento,0.6
+AT114329,Outros,Lescent,whatsapp,Reclamacao produto,0.66,Avaria,0.99,Avaria,0.98,Avaria,0.6
+AT105486,Duvida,Ápice,whatsapp,Duvida,0.99,Duvida,0.99,Duvida,0.99,Outros,0.6

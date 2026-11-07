@@ -1,0 +1,5 @@
+conversation_id,customer_id,order_id,marca,canal,data_abertura,tag_agente,status,n_interacoes,atendente_id,data_primeira_resposta,data_encerramento,assunto,csat
+AT105180,CH994783,GBH367391,Kokeshi,whatsapp,2026-08-08 17:57:05,Avaria,resolvido,7,atendente_12,2026-08-08 18:05:35,2026-08-08 19:06:39,,
+AT107296,CH483361,GCH532004,Gocase,whatsapp,2026-08-24 09:35:28,Outros,resolvido,8,atendente_20,2026-08-24 09:52:06,2026-08-24 10:44:20,,
+AT108179,CH383772,GCH533082,Gocase,whatsapp,2026-08-31 11:19:16,Avaria,resolvido,9,atendente_02,2026-08-31 11:29:28,2026-08-31 12:29:09,,
+AT108528,CH619054,GCH535004,Gocase,whatsapp,2026-09-02 14:42:44,Avaria,resolvido,6,atendente_21,2026-09-02 14:48:02,2026-09-02 15:38:45,,4

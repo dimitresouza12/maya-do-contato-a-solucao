@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+saida/
+
+# Base completa do evento: fica so na maquina (11 MB). A amostra em dados/amostra/ vai no repositorio.
+dados/atendimento/*
+!dados/atendimento/.gitkeep

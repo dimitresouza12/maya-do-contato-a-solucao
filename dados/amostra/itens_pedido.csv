@@ -1,0 +1,5 @@
+item_id,order_id,linha,sku,descricao,tipo_item,quantidade,preco_unitario,desconto_rateado,valor_total,personalizacao,texto_personalizacao,lote
+GBH367391-1,GBH367391,1,KSH-5002,Sérum Niacinamida 10% + Zinco 30ml,venda,1,99.9,0.0,99.9,,,LT2604-E
+GCH532004-1,GCH532004,1,GOC-5064,Tote Bag Daily Personalizada Nome,venda,1,219.9,32.99,186.91,nome,Matheus,
+GCH533082-1,GCH533082,1,GOC-5067,Mini Tote Personalizada Iniciais,venda,1,189.9,0.0,189.9,iniciais,N.S.,
+GCH535004-1,GCH535004,1,GOC-5034,Case Anti Impacto Slim Standard / Motorola Moto G84 5G Personalizada Foto,venda,1,64.9,0.0,64.9,foto,,

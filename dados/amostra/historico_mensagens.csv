@@ -1,0 +1,31 @@
+conversation_id,message_id,autor,timestamp,texto
+AT105180,MS0000634,bot,2026-08-08 17:57:05,"Olá, tudo bem? Você está falando com o atendimento Kokeshi. Em instantes uma pessoa do time continua com você."
+AT105180,MS0000635,cliente,2026-08-08 17:59:56,"Parabéns pela embalagem, o sérum de niacinamida cegou destruído 👏"
+AT105180,MS0000636,agente,2026-08-08 18:05:35,"Me passa o número do pedido, por favor?"
+AT105180,MS0000637,cliente,2026-08-08 18:10:13,pedido GBH367391
+AT105180,MS0000638,agente,2026-08-08 18:23:31,"Que chato, Giovana! Pode me enviar uma foto do produto e da embalagem? Daniela, atendimento Kokeshi."
+AT105180,MS0000639,cliente,2026-08-08 18:34:47,[imagem] [imagem]
+AT105180,MS0000640,agente,2026-08-08 18:42:13,"Obrigada, Giovana! Registrei aqui e o reenvio sai em até 2 dias úteis."
+AT107296,MS0003054,bot,2026-08-24 09:35:28,Oi! Aqui é a assistente virtual da Gocase. Me conta o que aconteceu ou envie o número do seu pedido 😊
+AT107296,MS0003055,cliente,2026-08-24 09:36:18,A tote bag veio com um rasgo no tecido. Tenho as fotos.
+AT107296,MS0003056,agente,2026-08-24 09:52:06,Consegue me mandar o número do pedido pra eu localizar?
+AT107296,MS0003057,cliente,2026-08-24 10:03:16,pedido GCH532004
+AT107296,MS0003058,agente,2026-08-24 10:13:47,"Poxa, Tainá, sinto muito! Me manda uma foto do produto e da embalagem pra eu registrar aqui? Thiago, atendimento Gocase."
+AT107296,MS0003059,cliente,2026-08-24 10:22:19,segue a foto [imagem]
+AT107296,MS0003060,agente,2026-08-24 10:27:45,"Obrigada, Tainá! Registrei aqui e o reenvio sai em até 2 dias úteis."
+AT107296,MS0003061,agente,2026-08-24 10:33:04,Tenha um ótimo dia!
+AT108179,MS0004015,bot,2026-08-31 11:19:16,Oi! Aqui é a assistente virtual da Gocase. Me conta o que aconteceu ou envie o número do seu pedido 😊
+AT108179,MS0004016,cliente,2026-08-31 11:22:29,a mini tote chegou com uma mancha que nao sai
+AT108179,MS0004017,cliente,2026-08-31 11:23:39,Quero o reenvio. 🙏
+AT108179,MS0004018,agente,2026-08-31 11:29:28,Pode me informar o número do pedido? Começa com GCH.
+AT108179,MS0004019,cliente,2026-08-31 11:36:32,GCH533082
+AT108179,MS0004020,agente,2026-08-31 11:38:57,"Poxa, Nayara, sinto muito! Me manda uma foto do produto e da embalagem pra eu registrar aqui? Camila | Time Gocase"
+AT108179,MS0004021,cliente,2026-08-31 11:48:38,[imagem] [imagem]
+AT108179,MS0004022,agente,2026-08-31 11:53:37,"Recebi as fotos, obrigada. Já solicitei o reenvio sem custo da mini tote."
+AT108179,MS0004023,agente,2026-08-31 12:05:20,Obrigada pelo contato! Qualquer coisa estou por aqui.
+AT108528,MS0004402,bot,2026-09-02 14:42:44,Oi! Aqui é a assistente virtual da Gocase. Me conta o que aconteceu ou envie o número do seu pedido 😊
+AT108528,MS0004403,cliente,2026-09-02 14:43:04,a borda da capinha do Moto G84 veio com uma rachadura. A caixa tb veio toda amassada. Quero o reenvio
+AT108528,MS0004404,agente,2026-09-02 14:48:02,"Que chato, Renan! Pode me enviar uma foto do produto e da embalagem? Aqui é o Gustavo."
+AT108528,MS0004405,cliente,2026-09-02 14:54:07,tá aí a foto [imagem]
+AT108528,MS0004406,agente,2026-09-02 15:00:05,"Obrigada, Renan! Registrei aqui e o reenvio sai em até 2 dias úteis."
+AT108528,MS0004407,cliente,2026-09-02 15:28:46,"perfeito, obrigado!"
