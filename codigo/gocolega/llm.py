@@ -137,7 +137,8 @@ def chat(modelo: str, sistema: str, usuario: str, max_tokens: int = 700) -> str:
     O proxy devolve so tokens (sem preco por chamada em modelos de chat)."""
     from . import modelos
     modelos.validar(modelo)
-    corpo = {"model": modelo, "max_tokens": max_tokens,
+    # temperature 0 (aceito pelo proxy em luna e terra, testado) para respostas mais reproduziveis. O Jev nao a aceita.
+    corpo = {"model": modelo, "max_tokens": max_tokens, "temperature": 0,
              "messages": [{"role": "system", "content": sistema},
                           {"role": "user", "content": mascarar_pii(usuario)}]}
     req = urllib.request.Request(

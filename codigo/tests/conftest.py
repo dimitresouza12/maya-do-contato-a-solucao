@@ -8,6 +8,30 @@ def sem_rede_nem_token(monkeypatch):
 
 
 @pytest.fixture
+def rastrear(monkeypatch):
+    """Roda o tratamento de rastreio com eventos e chamado INJETADOS (sem depender da base).
+    uso: r, ferr = rastrear(eventos, agora, chamado=None, texto='', valor=120.0)   |   rastrear.ev(status, datetime)"""
+    from datetime import date
+
+    from gocolega import rastreio
+    from gocolega.ferramentas import Ferramentas
+    from gocolega.orquestrador import Resultado, _rastreio
+
+    def executar(eventos, agora, chamado=None, texto="", **pedido_kw):
+        pedido = {"order_id": "GCH9", "valor": 120.0, "transportadora": "Expressa Já", "status_entrega": "em_transito",
+                  "data_prometida": date(2026, 8, 12), "codigo_rastreio": "X9", "data_entrega": None}
+        pedido.update(pedido_kw)
+        sit = rastreio.situacao(pedido, agora, eventos=eventos, chamado=chamado)
+        monkeypatch.setattr(rastreio, "situacao", lambda p, a: sit)
+        ferr = Ferramentas("atendente", "gocolega", agora)
+        return _rastreio(Resultado("ATX"), ferr, pedido, texto)
+
+    executar.ev = lambda status, quando, previsao=date(2026, 8, 12): {
+        "status": status, "data_hora_evento": quando, "local": "unidade", "previsao_entrega": previsao}
+    return executar
+
+
+@pytest.fixture
 def base_completa():
     """Alguns testes medem a base inteira. Sem ela (so a amostra do repositorio), eles sao pulados."""
     from gocolega import dados

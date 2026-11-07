@@ -101,6 +101,10 @@ class Ferramentas:
         self._exige("reenviar_produto")
         return self._registra("reenviar_produto", order_id=order_id, valor=valor, motivo=motivo, aprovacao_id=aprovacao_id)
 
+    def reembolsar(self, order_id: str, valor: float, motivo: str, aprovacao_id: str | None = None):
+        self._exige("reembolsar")
+        return self._registra("reembolsar", order_id=order_id, valor=valor, motivo=motivo, aprovacao_id=aprovacao_id)
+
     def reimprimir_personalizacao(self, order_id: str, valor: float, aprovacao_id: str | None = None):
         self._exige("reimprimir_personalizacao")
         return self._registra("reimprimir_personalizacao", order_id=order_id, valor=valor, aprovacao_id=aprovacao_id)

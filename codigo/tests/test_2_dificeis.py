@@ -158,6 +158,237 @@ def test_avaria_e_produto_faltando_divergem_porque_a_politica_e_outra(cenario):
     assert r.desfecho == "escalado" and not any(e["ferramenta"] == "reenviar_produto" for e in ferr.log)
 
 
+def _acoes(ferr):
+    return [e["ferramenta"] for e in ferr.log]
+
+
+def test_rastreio_parado_ha_3_dias_uteis_abre_chamado(rastrear):
+    """Politica: rastreio parado ha 3 du ou mais, mesmo dentro do prazo, pede chamado na transportadora."""
+    ev = rastrear.ev
+    r, ferr = rastrear([ev("coletado", datetime(2026, 8, 12, 9)), ev("em_transferencia", datetime(2026, 8, 14, 9))],
+                       datetime(2026, 8, 19, 10), data_prometida=date(2026, 8, 30))
+    assert "abrir_chamado_transportadora" in _acoes(ferr) and r.desfecho == "autonomo"
+    assert next(e for e in ferr.log if e["ferramenta"] == "abrir_chamado_transportadora")["motivo"] == "rastreio_sem_atualizacao"
+
+
+def test_chamado_ja_aberto_nao_e_duplicado(rastrear):
+    ev = rastrear.ev
+    chamado = {"chamado_id": "EXJ-1", "data_abertura": datetime(2026, 8, 17, 9), "motivo": "atraso_entrega", "status": "aberto"}
+    r, ferr = rastrear([ev("em_transferencia", datetime(2026, 8, 14, 9))], datetime(2026, 8, 20, 10), chamado=chamado)
+    assert "abrir_chamado_transportadora" not in _acoes(ferr)
+    assert "responder_cliente" in _acoes(ferr)
+
+
+def test_atraso_de_ate_7_du_abre_chamado_mas_nao_oferece_reembolso(rastrear):
+    ev = rastrear.ev
+    r, ferr = rastrear([ev("em_transferencia", datetime(2026, 8, 19, 9))], datetime(2026, 8, 20, 10))  # 6 du de atraso
+    assert "abrir_chamado_transportadora" in _acoes(ferr)
+    assert "reembolsar" not in _acoes(ferr) and "reenviar_produto" not in _acoes(ferr)
+    assert r.desfecho == "autonomo"
+
+
+def test_atraso_acima_de_7_du_oferece_as_duas_opcoes_e_espera_o_cliente(rastrear):
+    """Politica: acima de 7 du, reenviar ou reembolsar a escolha do cliente. Sem chamado (humanos: 0 de 70 casos)."""
+    ev = rastrear.ev
+    r, ferr = rastrear([ev("em_transferencia", datetime(2026, 8, 21, 9))], datetime(2026, 8, 24, 10))  # 8 du de atraso
+    assert "abrir_chamado_transportadora" not in _acoes(ferr)
+    assert r.desfecho == "aguardando_cliente"
+    assert not any(a in _acoes(ferr) for a in ("reenviar_produto", "reembolsar"))  # a escolha e do cliente
+
+
+@pytest.mark.parametrize("texto,valor,acao,desfecho", [
+    ("Quero o reembolso", 80.0, "reembolsar", "autonomo"),                  # <= R$ 100: dentro da alcada
+    ("Quero o reembolso", 150.0, None, "aguardando_supervisor"),            # > R$ 100: aprovacao
+    ("Prefiro o reenvio", 150.0, "reenviar_produto", "autonomo"),           # <= R$ 200
+    ("Prefiro o reenvio", 250.0, None, "aguardando_supervisor"),            # > R$ 200: aprovacao
+])
+def test_escolha_do_cliente_respeita_a_alcada(rastrear, texto, valor, acao, desfecho):
+    ev = rastrear.ev
+    r, ferr = rastrear([ev("em_transferencia", datetime(2026, 8, 21, 9))], datetime(2026, 8, 24, 10), texto=texto, valor=valor)
+    assert r.desfecho == desfecho
+    if acao:
+        assert acao in _acoes(ferr)
+    else:
+        assert "solicitar_aprovacao" in _acoes(ferr) and not any(a in _acoes(ferr) for a in ("reenviar_produto", "reembolsar"))
+
+
+def test_extravio_confirmado_aciona_logistica_e_oferece_opcoes_sem_chamado(rastrear):
+    ev = rastrear.ev
+    r, ferr = rastrear([ev("coletado", datetime(2026, 8, 5, 9)), ev("extraviado", datetime(2026, 8, 9, 9))], datetime(2026, 8, 10, 10))
+    assert "acionar_pessoa" in _acoes(ferr) and "abrir_chamado_transportadora" not in _acoes(ferr)
+    assert r.desfecho == "aguardando_cliente"
+
+
+def test_situacao_nao_vaza_o_futuro(base_completa):
+    """Numa conversa ANTES da entrega, o pedido nao pode aparecer como entregue (a base traz a posicao de 02/11)."""
+    from datetime import timedelta
+    from gocolega import rastreio
+    p = dados.uma("select p.* from pedidos p join rastreio_portais_transportadoras r on r.codigo_rastreio = p.codigo_rastreio "
+                  "where r.status = 'entregue' limit 1")
+    ev = dados.uma("select data_hora_evento from rastreio_portais_transportadoras where codigo_rastreio = ? and status = 'entregue'",
+                   [p["codigo_rastreio"]])
+    antes = ev["data_hora_evento"] - timedelta(days=5)
+    assert rastreio.situacao(p, antes).estado != "entregue"
+    assert rastreio.situacao(p, ev["data_hora_evento"] + timedelta(days=1)).estado == "entregue"
+
+
+def _forca(monkeypatch, classe, ato):
+    """Troca o ato da resposta de um agente: prova que o PosVenda decide PELA MENSAGEM que recebe."""
+    original = classe.receber
+
+    def receber(self, msg, bus):
+        m = original(self, msg, bus)
+        m.ato = ato
+        return m
+
+    monkeypatch.setattr(classe, "receber", receber)
+
+
+def test_fluxo_muda_quando_o_detetive_contesta(monkeypatch):
+    """AT105180 e legitimo, mas se o Detetive responde 'contestar', o PosVenda NAO reenvia: sinaliza."""
+    from gocolega import dialogo
+    _forca(monkeypatch, dialogo.AgenteDetetive, "contestar")
+    r, ferr = tratar("AT105180")
+    assert r.desfecho == "suspeita" and "reenviar_produto" not in _acoes(ferr) and "sinalizar_suspeita" in _acoes(ferr)
+
+
+@pytest.mark.parametrize("ato,desfecho,reenvia", [("negado", "fora_da_politica", False),
+                                                  ("precisa_aprovacao", "aguardando_supervisor", False),
+                                                  ("permitido", "autonomo", True)])
+def test_fluxo_muda_conforme_o_veredito_do_guardiao(monkeypatch, ato, desfecho, reenvia):
+    from gocolega import dialogo
+    original = dialogo.AgenteGuardiao.receber
+
+    def receber(self, msg, bus):
+        m = original(self, msg, bus)
+        m.ato, m.conteudo = ato, {"motivo": "veredito forcado no teste", "regra": "teste"}
+        return m
+
+    monkeypatch.setattr(dialogo.AgenteGuardiao, "receber", receber)
+    r, ferr = tratar("AT105180")
+    assert r.desfecho == desfecho and ("reenviar_produto" in _acoes(ferr)) == reenvia
+
+
+def _modelo_fala(monkeypatch, respostas):
+    """llm.chat devolve as 'respostas' em ordem (a ultima se repete) e conta as chamadas."""
+    monkeypatch.setenv("AI_PROXY_API_KEY", "gw-tok-teste")
+    chamadas = {"n": 0}
+
+    def chat(modelo, sistema, usuario, **k):
+        i = min(chamadas["n"], len(respostas) - 1)
+        chamadas["n"] += 1
+        return respostas[i]
+
+    monkeypatch.setattr(llm, "chat", chat)
+    return chamadas
+
+
+FATOS = "Reenvio sem custo aprovado e executado. O rastreio sera informado assim que o pedido sair."
+FIXO = "Resolvido! Vamos reenviar o seu pedido sem custo."
+
+
+def test_redator_corrige_apos_a_critica_do_verificador(monkeypatch):
+    """1o rascunho inventa 'em 3 dias'; o Verificador devolve o problema; o 2o rascunho passa."""
+    from gocolega import dialogo
+    chamadas = _modelo_fala(monkeypatch, ["Vamos reenviar em 3 dias uteis, sem custo.", "Vamos reenviar o seu pedido sem custo."])
+    bus = dialogo.montar()
+    texto = dialogo.redigir(bus, "reenvio aprovado", FATOS, FIXO)
+    assert texto == "Vamos reenviar o seu pedido sem custo." and chamadas["n"] == 2
+    atos = [m.ato for m in bus.transcricao]
+    # redigir -> rascunho -> revisar -> corrigir (critica) -> corrigir (pedido de revisao) -> rascunho -> revisar -> aprovar
+    assert atos.count("revisar") == 2 and atos[-1] == "aprovar" and "corrigir" in atos
+    assert any("nao estao nos fatos" in str(m.conteudo.get("problemas", "")) for m in bus.transcricao)
+
+
+def test_revisoes_esgotadas_caem_no_texto_fixo(monkeypatch):
+    from gocolega import dialogo
+    chamadas = _modelo_fala(monkeypatch, ["Garantimos o envio em 5 dias."])  # sempre reprovado
+    bus = dialogo.montar()
+    texto = dialogo.redigir(bus, "reenvio aprovado", FATOS, FIXO)
+    assert texto == FIXO and chamadas["n"] == 1 + dialogo.MAX_REVISOES  # 1 rascunho + 2 revisoes
+    assert bus.transcricao[-1].ato == "usar_texto_fixo"
+
+
+@pytest.mark.parametrize("rascunho", ["Identificamos uma possivel fraude no seu pedido.", "Voce esta tentando nos enganar."])
+def test_verificador_barra_texto_que_acusa_o_cliente(monkeypatch, rascunho):
+    from gocolega import dialogo
+    _modelo_fala(monkeypatch, [rascunho])
+    texto = dialogo.redigir(dialogo.montar(), "analise", "Caso em analise.", "Estamos analisando o seu caso.")
+    assert texto == "Estamos analisando o seu caso."
+
+
+def test_dialogo_longo_demais_e_interrompido_e_o_caso_nao_quebra(monkeypatch):
+    from gocolega import dialogo
+    bus = dialogo.Barramento(limite=3)
+    bus.registrar(dialogo.AgenteGuardiao())
+    for _ in range(3):
+        bus.enviar("A", "ninguem", "oi")
+    with pytest.raises(dialogo.LimiteDeMensagens):
+        bus.enviar("A", "ninguem", "oi")
+
+
+PERGUNTA = "Qual a validade do serum de niacinamida depois de aberto?"
+
+
+@pytest.mark.parametrize("pergunta", [
+    "Posso usar o serum se estou gravida?", "O creme causa alergia?", "Serve para tratamento de dermatite?"])
+def test_pergunta_de_saude_nunca_e_respondida_pela_base(pergunta):
+    from gocolega import duvida
+    resp, motivo = duvida.responder(pergunta, usar_llm=False)
+    assert resp is None and "saude" in motivo
+
+
+def test_pergunta_fora_da_base_nao_e_chutada():
+    from gocolega import duvida
+    resp, motivo = duvida.responder("Qual o melhor restaurante de Fortaleza?", usar_llm=False)
+    assert resp is None and "cobertura" in motivo
+
+
+def test_modelo_com_resposta_fundamentada_e_aceito(monkeypatch):
+    from gocolega import duvida
+    monkeypatch.setattr(llm, "chat", lambda *a, **k: "A validade apos aberto e de 6 meses [produto:KSH-5002].")
+    resp, _ = duvida.responder(PERGUNTA, usar_llm=True)
+    assert resp.origem == "llm" and "Fonte: produto:KSH-5002" in resp.texto and "[produto" not in resp.texto
+
+
+@pytest.mark.parametrize("saida,motivo", [
+    ("A validade e de 6 meses.", "sem citacao"),                                              # nao cita fonte
+    ("A validade apos aberto e de 6 meses [produto:XXX-9999].", "nao foi recuperada"),         # fonte inventada
+    ("A validade apos aberto e de 18 meses [produto:KSH-5002].", "nao estao nos fatos"),       # numero inventado
+    ("Este produto cura acne e rejuvenesce a pele [produto:KSH-5002].", "sem apoio na ficha"),  # afirmacao inventada
+])
+def test_resposta_do_modelo_fora_das_regras_cai_para_a_linha_da_ficha(monkeypatch, saida, motivo):
+    from gocolega import duvida
+    monkeypatch.setattr(llm, "chat", lambda *a, **k: saida)
+    resp, _ = duvida.responder(PERGUNTA, usar_llm=True)
+    assert resp.origem == "extrativa"  # nunca entrega o texto reprovado
+    assert any(motivo in a for a in resp.avisos)
+    assert "cura acne" not in resp.texto and "18 meses" not in resp.texto
+
+
+def test_modelo_que_diz_nao_sei_cai_para_a_linha_da_ficha(monkeypatch):
+    from gocolega import duvida
+    monkeypatch.setattr(llm, "chat", lambda *a, **k: "NAO_SEI")
+    resp, _ = duvida.responder(PERGUNTA, usar_llm=True)
+    assert resp.origem == "extrativa"
+
+
+def test_precedentes_nao_vazam_o_futuro(base_completa):
+    from gocolega import conhecimento
+    corte = datetime(2026, 8, 20)
+    p = conhecimento.base().precedentes("meu pedido nao chegou e o rastreio nao anda", antes_de=corte)
+    datas = [conhecimento.base().indices["caso"].p[[x.id for x in conhecimento.base().indices["caso"].p].index(i)].meta["data"]
+             for i in p["ids"]]
+    assert p["n"] >= 2 and all(d < corte for d in datas)
+
+
+def test_cobertura_e_medida_contra_todos_os_termos_da_pergunta():
+    """Antes, uma politica que conhecia 1 de 5 termos aparecia com cobertura 100% (enganoso)."""
+    from gocolega import conhecimento
+    for r in conhecimento.base().buscar("validade do serum depois de aberto", "politica", k=5):
+        assert r.cobertura < 0.5
+
+
 def test_detetive_nao_e_rigido_demais_na_base_inteira(base_completa):
     # amostra fixa de 100 (a base inteira leva ~70 s); a base toda foi medida a parte: 10,4%
     convs = dados.consulta("select distinct conversation_id, order_id from anexos_conversas "

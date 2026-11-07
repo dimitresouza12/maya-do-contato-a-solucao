@@ -124,6 +124,24 @@ def juiz_foto(descricao_visual: str, item: str, personalizacao: str) -> dict | N
 
 
 # ---------------------------------------------------------------- Redator (sub)
+def redator_rascunho(situacao: str, fatos: str, problemas: list[str] | None = None, anterior: str | None = None) -> str | None:
+    """Um rascunho de resposta ao cliente (ou uma REVISAO, quando o Verificador apontou problemas). None se falhar.
+    A validacao NAO e feita aqui: quem critica e o Verificador, em outra mensagem."""
+    sistema = (
+        "Voce escreve respostas de atendimento ao cliente de e-commerce, em portugues do Brasil, "
+        "com tom humano, gentil e direto, em ate 3 frases. "
+        "Use SOMENTE os fatos fornecidos. Nao prometa nada alem do que esta nos fatos. Nao invente numeros, datas, "
+        "prazos nem valores. Nao pergunte nem repita CPF, cartao ou telefone. Nao use emojis. "
+        "Nao insinue que o cliente esteja errado ou mentindo. Responda so com o texto da mensagem.")
+    usuario = f"SITUACAO: {situacao}\nFATOS: {fatos}"
+    if problemas:
+        usuario += ("\n\nRASCUNHO ANTERIOR:\n" + (anterior or "") +
+                    "\n\nPROBLEMAS APONTADOS PELO VERIFICADOR (corrija todos e mantenha so o que os fatos sustentam):\n- " +
+                    "\n- ".join(problemas))
+    saida = _tentar(lambda: llm.chat(modelos.SUB, sistema, usuario, max_tokens=300), f"Redator ({modelos.SUB})")
+    return mascarar_pii(saida.strip()) if saida else None
+
+
 def redator(situacao: str, fatos: str, fallback: str) -> str:
     """Escreve a resposta ao cliente. Se a saida violar uma regra, usa o texto fixo (fallback)."""
     sistema = (

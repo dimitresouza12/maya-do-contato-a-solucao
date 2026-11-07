@@ -8,7 +8,7 @@ TABELAS = [
     "historico_conversas", "historico_mensagens", "fila_aberta", "pedidos", "clientes",
     "anexos_conversas", "trocas_reenvios", "itens_pedido", "produtos", "ferramentas",
     "equipe_atendimento", "chamados_transportadora", "rastreio_portais_transportadoras",
-    "pagamentos_gateway", "estornos", "politicas",
+    "pagamentos_gateway", "estornos", "politicas", "tempo_por_conversa",
 ]
 
 

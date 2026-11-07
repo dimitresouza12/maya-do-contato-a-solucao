@@ -38,6 +38,9 @@ def main():
         "anexos_conversas": "select * from anx",
         "trocas_reenvios": "select * from trocas_reenvios where order_id_original in (select order_id from ped)",
         "ferramentas": "select * from ferramentas",
+        # base de conhecimento (RAG): fichas de produto e politicas completas (sao pequenas)
+        "produtos": "select * from produtos",
+        "politicas": "select * from politicas",
     }
     for nome, sql in saidas.items():
         arq = os.path.join(DESTINO, f"{nome}.csv").replace("\\", "/")

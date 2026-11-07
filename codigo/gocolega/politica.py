@@ -17,6 +17,8 @@ ACOES_POR_CATEGORIA = {
     "avaria_vazamento": {"solicitar_foto", "reenviar_produto"},
     "item_faltante": {"solicitar_foto", "reenviar_produto"},
     "erro_personalizacao": {"solicitar_foto", "reimprimir_personalizacao"},
+    "atraso_entrega": {"abrir_chamado_transportadora", "reenviar_produto", "reembolsar"},
+    "onde_esta_pedido": {"informar_status", "abrir_chamado_transportadora"},
 }
 
 

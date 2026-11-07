@@ -78,13 +78,44 @@ def test_pedido_entregue_e_informado_ao_cliente():
     assert any(e["ferramenta"] == "responder_cliente" for e in f.log)
 
 
-def test_pedido_extraviado_abre_chamado_e_chama_logistica():
-    f = Ferramentas("atendente", "gocolega", AGORA)
-    pedido = {"order_id": "GCH2", "status_entrega": "extraviado", "transportadora": "Expressa Já"}
+def _ev(status, quando, local="CD", previsao=date(2026, 8, 12)):
+    return {"status": status, "data_hora_evento": quando, "local": local, "previsao_entrega": previsao}
+
+
+def _pedido(**kw):
+    base = {"order_id": "GCH2", "valor": 120.0, "transportadora": "Expressa Já", "status_entrega": "em_transito",
+            "data_prometida": date(2026, 8, 12), "codigo_rastreio": "X1", "data_entrega": None}
+    base.update(kw)
+    return base
+
+
+def test_pedido_extraviado_aciona_logistica_e_oferece_opcoes(monkeypatch):
+    from gocolega import rastreio
     from gocolega.orquestrador import Resultado
-    r, f = _rastreio(Resultado("AT2"), f, pedido)
+    f = Ferramentas("atendente", "gocolega", AGORA)
+    sit = rastreio.situacao(_pedido(), AGORA, eventos=[_ev("coletado", datetime(2026, 8, 5, 9)),
+                                                       _ev("extraviado", datetime(2026, 8, 9, 9))], chamado=None)
+    monkeypatch.setattr(rastreio, "situacao", lambda p, a: sit)
+    r, f = _rastreio(Resultado("AT2"), f, _pedido())
     nomes = [e["ferramenta"] for e in f.log]
-    assert "abrir_chamado_transportadora" in nomes and "acionar_pessoa" in nomes
+    assert "acionar_pessoa" in nomes and "abrir_chamado_transportadora" not in nomes
+    assert r.desfecho == "aguardando_cliente"  # oferece reenvio ou reembolso, a escolha do cliente
+
+
+def test_dias_uteis_pulam_fim_de_semana_e_feriado():
+    from gocolega import rastreio
+    # sexta 04/09/2026 -> terca 08/09/2026: seg 07/09 e feriado, sobra so a terca
+    assert rastreio.dias_uteis_entre(date(2026, 9, 4), date(2026, 9, 8)) == 1
+    assert rastreio.dias_uteis_entre(date(2026, 8, 7), date(2026, 8, 10)) == 1  # sexta -> segunda
+    assert rastreio.dias_uteis_entre(date(2026, 8, 10), date(2026, 8, 10)) == 0
+
+
+def test_em_transito_dentro_do_prazo_so_informa_sem_abrir_chamado():
+    from gocolega import rastreio
+    ag = datetime(2026, 8, 10, 10)
+    sit = rastreio.situacao(_pedido(), ag, eventos=[_ev("em_transferencia", datetime(2026, 8, 10, 8))], chamado=None)
+    plano = rastreio.decidir(sit, _pedido())
+    assert plano.tipo == "informar_no_prazo" and not plano.abrir_chamado and not plano.oferecer_opcoes
 
 
 def _jev_falso(p_sens, p_inj):
@@ -137,6 +168,39 @@ def test_confianca_baixa_com_consenso_segue_normalmente(cenario):
     r, ferr = tratar("AT105180")
     assert chamadas["segunda"] == 1 and r.desfecho == "autonomo"
     assert any("segunda opiniao" in p.lower() for p in r.passos)
+
+
+def test_a_conversa_entre_os_agentes_fica_gravada():
+    """Pos-venda legitimo: o PosVenda propoe ao Detetive, que aprova, e consulta o Guardiao, que permite."""
+    r, _ = tratar("AT105180")
+    linhas = "\n".join(r.conversa())
+    assert "[PosVenda -> Detetive*] propor" in linhas and "[Detetive* -> PosVenda] aprovar" in linhas
+    assert "[PosVenda -> Guardiao] consultar" in linhas and "[Guardiao -> PosVenda] permitido" in linhas
+
+
+def test_busca_normaliza_acento_e_plural():
+    from gocolega import conhecimento
+    assert "serum" in conhecimento.tokens("Sérum") and "hidratante" in conhecimento.tokens("Hidratantes")
+
+
+def test_rag_encontra_a_ficha_certa_do_produto():
+    from gocolega import conhecimento
+    r = conhecimento.base().buscar("validade do serum de niacinamida depois de aberto", "produto", k=1)
+    assert r and r[0].passagem.id == "produto:KSH-5002" and r[0].cobertura >= 0.5
+
+
+def test_duvida_responde_com_a_linha_da_ficha_e_cita_a_fonte():
+    from gocolega import duvida
+    resp, _ = duvida.responder("Qual a validade do serum de niacinamida depois de aberto?", usar_llm=False)
+    assert resp is not None and resp.origem == "extrativa"
+    assert "Validade apos aberto" in resp.texto and resp.fontes == ["produto:KSH-5002"]
+
+
+def test_duvida_de_produto_e_respondida_pelo_fluxo_completo():
+    r, ferr = tratar("AT105180", texto_override="Qual a validade do serum de niacinamida depois de aberto?")
+    assert r.desfecho == "autonomo"
+    resposta = next(e["texto"] for e in ferr.log if e["ferramenta"] == "responder_cliente")
+    assert "Fonte: produto:" in resposta
 
 
 def test_pii_comum_e_mascarada():
