@@ -65,5 +65,5 @@ codigo/tests/        232 testes: comuns, difíceis, estranhos
 codigo/benchmarks/   lote de ponta a ponta, benchmark de modelos, validação contra a equipe
 dados/amostra/       amostra dos dados (a base completa fica fora do git)
 docs/                benchmark da triagem e validação das rotas
-DIARIO.md            erros, decisões e correções (36 entradas), para quem quiser o caminho
+DIARIO.md            erros, decisões e correções (37 entradas), para quem quiser o caminho
 ```
