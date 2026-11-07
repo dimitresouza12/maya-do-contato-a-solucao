@@ -1,4 +1,4 @@
-# Maya
+# Maya · Do Contato à Solução
 
 **Agente de IA para o atendimento da Gocase e da GoBeauté: responde sozinho o que a política permite, confere se a reclamação procede antes de agir e só chama uma pessoa em caso sério.**
 
