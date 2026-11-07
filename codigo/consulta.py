@@ -1,4 +1,4 @@
-"""Consulta a base de conhecimento do GoColega (RAG): produtos, politicas e casos ja atendidos.
+"""Consulta a base de conhecimento da Maya (RAG): produtos, politicas e casos ja atendidos.
 
 Uso (da raiz):
     python codigo/consulta.py "Qual a validade do serum depois de aberto?"
@@ -41,7 +41,7 @@ def main():
             print(f"  [{r.passagem.id}] score {r.score:.1f} | cobertura {r.cobertura:.0%} | {r.passagem.titulo}")
     print()
     if resp is None:
-        print(f"SEM RESPOSTA: {motivo}. O GoColega encaminharia a uma pessoa.")
+        print(f"SEM RESPOSTA: {motivo}. A Maya encaminharia a uma pessoa.")
     else:
         print(f"RESPOSTA ({resp.origem}): {resp.texto}")
         for a in resp.avisos:

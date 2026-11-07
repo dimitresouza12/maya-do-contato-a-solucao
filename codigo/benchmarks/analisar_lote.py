@@ -1,4 +1,4 @@
-"""Analisa codigo/benchmarks/lote_resultados.csv (gerado por rodar_lote.py): o que o GoColega fez em cada caso,
+"""Analisa codigo/benchmarks/lote_resultados.csv (gerado por rodar_lote.py): o que A Maya fez em cada caso,
 de que rota veio, e quanto concorda com o que o atendente humano FEZ de fato nas conversas do historico.
 
 Uso (da raiz, com a base completa):  python codigo/benchmarks/analisar_lote.py
@@ -70,19 +70,19 @@ for l in hist:
     hm = "reenviou/trocou" if l["conversation_id"] in humano else "nao"
     m[(gc, hm)] += 1
 print("                         humano reenviou/trocou | humano nao")
-print(f"  GoColega reenvia       {m[('reenvia', 'reenviou/trocou')]:12d}          | {m[('reenvia', 'nao')]:5d}")
-print(f"  GoColega nao reenvia   {m[('nao reenvia', 'reenviou/trocou')]:12d}          | {m[('nao reenvia', 'nao')]:5d}")
+print(f"  Maya reenvia       {m[('reenvia', 'reenviou/trocou')]:12d}          | {m[('reenvia', 'nao')]:5d}")
+print(f"  Maya nao reenvia   {m[('nao reenvia', 'reenviou/trocou')]:12d}          | {m[('nao reenvia', 'nao')]:5d}")
 conc = m[('reenvia', 'reenviou/trocou')] + m[('nao reenvia', 'nao')]
 print(f"  concordancia simples: {conc}/{len(hist)} = {100 * conc / len(hist):.0f}%")
 com_reenvio_humano = [l for l in hist if l["conversation_id"] in humano]
-print(f"  conversas em que o humano reenviou/trocou: {len(com_reenvio_humano)}; destas, o GoColega: " +
+print(f"  conversas em que o humano reenviou/trocou: {len(com_reenvio_humano)}; destas, A Maya: " +
       ", ".join(f"{d}={q}" for d, q in Counter(l['desfecho'] for l in com_reenvio_humano).most_common()))
 
 print("\n## Falhas de modelo (cada AVISO e uma chamada que caiu para o caminho deterministico)")
 print(f"  casos com aviso: {sum(int(l['avisos'] or 0) > 0 for l in linhas)}; total de avisos: {sum(int(l['avisos'] or 0) for l in linhas)}; "
       f"na fila: {sum(int(l['avisos'] or 0) for l in linhas if l['origem'] == 'fila')}")
 
-print("\n## Tempo humano nas conversas do historico que o GoColega resolveu sozinho (TETO, nao economia)")
+print("\n## Tempo humano nas conversas do historico que A Maya resolveu sozinho (TETO, nao economia)")
 a_h = [l["conversation_id"] for l in hist if l["desfecho"] == "autonomo"]
 t = dados.uma(f"select count(*) n, round(sum(minutos_trabalhados), 0) minutos, round(avg(minutos_trabalhados), 1) media "
               f"from tempo_por_conversa where conversation_id in ({','.join(repr(x) for x in a_h)})")

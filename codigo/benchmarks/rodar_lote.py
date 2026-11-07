@@ -1,4 +1,4 @@
-"""Roda o GoColega em lote (fila aberta + amostra do historico) com os modelos reais e resume o que aconteceu.
+"""Roda A Maya em lote (fila aberta + amostra do historico) com os modelos reais e resume o que aconteceu.
 
 O lote e SEQUENCIAL de proposito: o registro de avisos do agente e global, e um token compartilhado tem
 limite de 250 requisicoes por minuto.
@@ -98,13 +98,13 @@ def main():
     resumo("FILA ABERTA", [x for x in linhas if x["origem"] == "fila"])
     resumo("HISTORICO (amostra)", [x for x in linhas if x["origem"] == "historico"])
 
-    # Teto de tempo humano nas conversas que o GoColega trataria sozinho (so historico, que tem tempo_por_conversa)
+    # Teto de tempo humano nas conversas que A Maya trataria sozinho (so historico, que tem tempo_por_conversa)
     auto = [x["conversation_id"] for x in linhas if x["origem"] == "historico" and x["desfecho"] == "autonomo"]
     if auto:
         lista = ",".join(f"'{a}'" for a in auto)
         t = dados.uma(f"select count(*) n, round(sum(minutos_trabalhados), 0) minutos, round(avg(minutos_trabalhados), 1) media "
                       f"from tempo_por_conversa where conversation_id in ({lista})")
-        print(f"\nTempo humano gasto nas {len(auto)} conversas do historico que o GoColega resolveu sozinho: "
+        print(f"\nTempo humano gasto nas {len(auto)} conversas do historico que A Maya resolveu sozinho: "
               f"{t['n']} com tempo registrado, {t['minutos']} min no total (media {t['media']} min). "
               f"E um TETO, nao uma economia garantida.")
     seg = [x["segundos"] for x in linhas if x.get("segundos") is not None]

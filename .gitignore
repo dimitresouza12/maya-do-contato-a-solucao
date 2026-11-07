@@ -10,3 +10,6 @@ saida/
 # Base completa do evento: fica so na maquina (11 MB). A amostra em dados/amostra/ vai no repositorio.
 dados/atendimento/*
 !dados/atendimento/.gitkeep
+
+# Material do pitch e da inscricao (nao faz parte do agente)
+entrega/

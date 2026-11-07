@@ -84,7 +84,7 @@ def main():
         cid, cliente, desfecho, resposta, acoes, cat = casos[ix]
         f = _checagens(cliente, resposta, desfecho)
         flags_total += bool(f)
-        out += [f"## {i}. {cid} · {cat} · {desfecho}", "", f"> **Cliente:** {cliente}", "", f"> **GoColega:** {resposta}", "",
+        out += [f"## {i}. {cid} · {cat} · {desfecho}", "", f"> **Cliente:** {cliente}", "", f"> **Maya:** {resposta}", "",
                 f"Ações: {', '.join(acoes) or 'nenhuma'}  ", f"Verificações automáticas: {'; '.join(f) if f else 'nenhum problema objetivo'}", "",
                 "| Tom (1-5) | Correção (1-5) | Mandaria? | Observação |", "|---|---|---|---|", "|   |   |   |   |", ""]
     out.insert(2, f"Verificações automáticas: **{flags_total} de {len(escolhidos)}** respostas com algum alerta objetivo.\n")

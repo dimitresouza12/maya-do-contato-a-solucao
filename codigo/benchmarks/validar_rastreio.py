@@ -1,6 +1,6 @@
 """Valida a regra de Rastreio e Atraso contra o que os atendentes HUMANOS fizeram (so base completa).
 
-Para cada conversa que o humano etiquetou como Rastreio ou Atraso, calcula o que o GoColega decidiria com os dados
+Para cada conversa que o humano etiquetou como Rastreio ou Atraso, calcula o que A Maya decidiria com os dados
 disponiveis NA DATA DA CONVERSA (sem vazar o futuro) e compara com:
   - chamado na transportadora aberto pelo humano nessa conversa (chamados_transportadora.conversation_id)
   - reenvio/troca por atraso ou extravio registrado pelo humano (trocas_reenvios, motivo atraso_ou_extravio)
@@ -44,27 +44,27 @@ for c in convs:
 
 n = len(convs)
 print(f"Conversas Rastreio/Atraso (etiqueta humana) com pedido: {n}\n")
-print("## O que o GoColega decidiria")
+print("## O que A Maya decidiria")
 for t, q in tipos.most_common():
     print(f"  {t:22s} {q:4d} ({100 * q / n:4.1f}%)")
 
-print("\n## Abrir chamado na transportadora: GoColega x humano")
+print("\n## Abrir chamado na transportadora: Maya x humano")
 tp, fp, fn, tn = m_chamado[("chamado", "chamado")], m_chamado[("chamado", "sem chamado")], m_chamado[("sem chamado", "chamado")], m_chamado[("sem chamado", "sem chamado")]
 print(f"                        humano abriu | humano nao abriu")
-print(f"  GoColega abriria      {tp:10d}  | {fp:10d}")
-print(f"  GoColega nao abriria  {fn:10d}  | {tn:10d}")
+print(f"  Maya abriria      {tp:10d}  | {fp:10d}")
+print(f"  Maya nao abriria  {fn:10d}  | {tn:10d}")
 print(f"  precisao {100 * tp / max(1, tp + fp):.0f}% | cobertura {100 * tp / max(1, tp + fn):.0f}% | concordancia {100 * (tp + tn) / n:.0f}%")
 print(f"  base: o humano abriu chamado em {tp + fn} de {n} conversas ({100 * (tp + fn) / n:.0f}%)")
 
-print("\n## Oferecer reenvio/reembolso (atraso > 7 du ou extravio): GoColega x humano que reenviou por atraso/extravio")
-print(f"  GoColega oferece: {m_opc[('oferece', 'reenvio humano')] + m_opc[('oferece', 'sem reenvio')]} conversas | "
+print("\n## Oferecer reenvio/reembolso (atraso > 7 du ou extravio): Maya x humano que reenviou por atraso/extravio")
+print(f"  Maya oferece: {m_opc[('oferece', 'reenvio humano')] + m_opc[('oferece', 'sem reenvio')]} conversas | "
       f"destas, o humano reenviou em {m_opc[('oferece', 'reenvio humano')]}")
-print(f"  GoColega nao oferece: {m_opc[('nao', 'reenvio humano')] + m_opc[('nao', 'sem reenvio')]} | "
+print(f"  Maya nao oferece: {m_opc[('nao', 'reenvio humano')] + m_opc[('nao', 'sem reenvio')]} | "
       f"destas, o humano reenviou em {m_opc[('nao', 'reenvio humano')]}")
 
-print("\n## Exemplos em que o humano abriu chamado e o GoColega nao (conversa, plano, dias parado, atraso du, estado)")
+print("\n## Exemplos em que o humano abriu chamado e A Maya nao (conversa, plano, dias parado, atraso du, estado)")
 for e in exemplos_perdidos:
     print("  ", e)
-print("## Exemplos em que o GoColega abriria chamado e o humano nao")
+print("## Exemplos em que A Maya abriria chamado e o humano nao")
 for e in exemplos_extras:
     print("  ", e)

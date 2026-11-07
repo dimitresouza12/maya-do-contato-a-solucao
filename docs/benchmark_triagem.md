@@ -1,15 +1,15 @@
 # Benchmark da triagem: Jev × gpt-5.6 × gpt-6 × regras
 
-Pergunta: **quem classifica melhor a mensagem do cliente?** Feito em 07/11/2026 para decidir se o Jev continua na triagem do GoColega.
+Pergunta: **quem classifica melhor a mensagem do cliente?** Feito em 07/11/2026 para decidir se o Jev continua na triagem da Maya.
 
 > **Correção (mesmo dia):** a primeira versão deste documento dizia que Jev, luna e terra "empatam" (52%, 54%, 56%). Aqueles números vinham de uma amostra que **não era reprodutível** (o `group by` do DuckDB não tem ordem fixa e o sorteio com semente embaralhava uma lista diferente a cada execução; só 9 das 100 conversas coincidiam entre duas execuções). A amostra agora é ordenada antes do sorteio, e **todos os classificadores rodaram juntos, nas mesmas 100 conversas**. Os números abaixo substituem os antigos, e a conclusão mudou. Ver `DIARIO.md`, entrada 30.
 
 ## Método
 - **Amostra:** 100 conversas (semente 42) entre as que têm `tag_agente`, de um total de 2.654 rotuladas. Agora reprodutível.
 - **Gabarito:** a `tag_agente`, escolhida **manualmente por um atendente** ao encerrar a conversa. Não é verdade absoluta (ver "Limites").
-- **Entrada:** o mesmo texto que o GoColega recebe (mensagens do cliente concatenadas), com CPF, cartão e telefone mascarados.
+- **Entrada:** o mesmo texto que A Maya recebe (mensagens do cliente concatenadas), com CPF, cartão e telefone mascarados.
 - **Justiça:** todos receberam só os **nomes** das 13 categorias, sem definições. O texto do cliente entra delimitado como dado.
-- **Modelos:** Jev; gpt-5.6-luna e gpt-5.6-terra (usados no GoColega); gpt-6-luna e gpt-6-astra (testados agora); regras.
+- **Modelos:** Jev; gpt-5.6-luna e gpt-5.6-terra (usados na Maya); gpt-6-luna e gpt-6-astra (testados agora); regras.
 - **Reprodução:** `python codigo/benchmarks/comparar_triagem.py 100 42`. Resultados por conversa em `codigo/benchmarks/triagem_resultados.csv` (sem o texto do cliente).
 
 ## Resultado 1: acerto da categoria exata (13 categorias)
@@ -25,8 +25,8 @@ Pergunta: **quem classifica melhor a mensagem do cliente?** Feito em 07/11/2026 
 
 Os quatro modelos GPT ficam entre 70% e 75% e **empatam entre si**. O **Jev fica 8 a 13 pontos abaixo**: os intervalos ainda se tocam, mas a diferença é consistente nos quatro. As regras ficam bem atrás. O Jev é de 4× a 10× mais rápido.
 
-## Resultado 2: acerto por rota (o que muda a ação do GoColega)
-O GoColega só executa duas rotas: pós-venda (Avaria, Produto faltando, Reclamação produto) e rastreio (Rastreio, Atraso). Confundir Rastreio com Atraso **não muda a ação**.
+## Resultado 2: acerto por rota (o que muda a ação da Maya)
+A Maya só executa duas rotas: pós-venda (Avaria, Produto faltando, Reclamação produto) e rastreio (Rastreio, Atraso). Confundir Rastreio com Atraso **não muda a ação**.
 
 | Classificador | Rota certa | Intervalo de 95% | Agiria em rota errada |
 |---|---|---|---|
@@ -57,7 +57,7 @@ O GoColega só executa duas rotas: pós-venda (Avaria, Produto faltando, Reclama
 - **Todos erram as mesmas categorias:** "Reclamação produto" (0 de 3 em todos) e "Outros" (0 de 2, só as regras acertam 1). O gabarito humano é provavelmente ambíguo nesses casos.
 - **Em 19 das 100 conversas nenhum classificador acertou.** Isso sugere ruído no gabarito.
 - **Custo:** o Jev gastou US$ 0,00256 nas 100 chamadas (≈ **US$ 0,0000256 por conversa**, estimativa do proxy). O proxy **não informa preço por chamada** para os modelos GPT, só tokens (17.566 de entrada cada; saída de ~2.100 a ~2.300, e **4.783 no gpt-6-luna**). Por isso **não dá para comparar custo em dólar**.
-- **Cobertura do GoColega:** as duas rotas que ele executa somam 1.577 das 2.984 conversas do histórico (52,8%), pelas etiquetas humanas.
+- **Cobertura da Maya:** as duas rotas que ele executa somam 1.577 das 2.984 conversas do histórico (52,8%), pelas etiquetas humanas.
 
 ## Decisão
 **Em aberto.** O que os dados sustentam:
@@ -68,7 +68,7 @@ O GoColega só executa duas rotas: pós-venda (Avaria, Produto faltando, Reclama
 | Trocar para **gpt-6-astra** | Maior acerto (75%), 92% na rota, 3 s é aceitável em atendimento | Sem confiança utilizável: não há como acionar a segunda opinião por incerteza; custo em dólar desconhecido |
 | **gpt-6-astra com Jev como sinal de incerteza** (os dois rodam; humano se discordarem) | Usa o melhor de cada um | Duas chamadas por conversa; precisa ser medido |
 
-Nenhuma troca foi feita no código: o GoColega continua com Jev + cascata, e os números do lote de 210 conversas foram medidos assim.
+Nenhuma troca foi feita no código: A Maya continua com Jev + cascata, e os números do lote de 210 conversas foram medidos assim.
 
 ## Limites (leia antes de citar estes números)
 - **Amostra pequena:** 100 conversas, intervalos de 95% de cerca de ±10 pontos. Diferenças de 2 a 4 pontos entre modelos GPT **não significam nada**.

@@ -1,4 +1,4 @@
-"""Interface local do GoColega (so para demonstrar): monitor de atendimento, canal do time e resultados.
+"""Interface local da Maya (so para demonstrar): monitor de atendimento, canal do time e resultados.
 
 Uso (da raiz):  python codigo/app/servidor.py [porta=8765]   ->   http://127.0.0.1:8765
 
@@ -104,7 +104,7 @@ def processar(cid: str) -> dict:
         "status": "fila_humana" if precisa else "agente",
         "motivo": (MOTIVO.get(r.desfecho) or (f"{assunto}." if assunto else "Uma pessoa precisa olhar este caso.")) if precisa else "",
         "contexto": contexto[:900], "rascunho": rascunho, "area": area, "urgencia": urgencia, "prazo": prazo if precisa else "",
-        "humano": [],
+        "humano": [], "avaliacao": None,
     }
 
 
@@ -199,6 +199,104 @@ def humano(corpo: dict) -> dict:
         return it
 
 
+# ---------------------------------------------------------------- feedback
+ARQ_FEEDBACK = os.path.join(RAIZ, "saida", "feedback.json")  # saida/ fica fora do git
+MOTIVOS_RUINS = ["Resposta errada", "Tom ruim", "Poderia ter resolvido sozinha", "Não precisava de humano", "Faltou informação", "Outro"]
+AVALIACOES: list[dict] = []
+try:
+    with open(ARQ_FEEDBACK, encoding="utf-8") as _f:
+        AVALIACOES = json.load(_f)
+except (OSError, ValueError):
+    AVALIACOES = []
+
+
+def avaliar(corpo: dict) -> dict:
+    """O atendente avalia o que a Maya fez numa conversa. Guardado em memoria e em saida/feedback.json (fora do git)."""
+    nota = corpo.get("nota")
+    if nota not in ("bom", "ruim"):
+        raise ValueError("nota deve ser 'bom' ou 'ruim'")
+    with ESTADO_LOCK:
+        it = next((i for i in MON["itens"] if i["id"] == corpo.get("id")), None)
+        if not it:
+            raise ValueError("conversa nao encontrada")
+        av = {"id": it["id"], "categoria": it["categoria"], "desfecho": it["desfecho_rotulo"], "canal": it["canal"], "nota": nota,
+              "motivo": str(corpo.get("motivo", ""))[:60] if nota == "ruim" else "", "comentario": mascarar_pii(str(corpo.get("comentario", "")))[:400],
+              "quando": time.strftime("%H:%M:%S")}
+        AVALIACOES[:] = [a for a in AVALIACOES if a["id"] != av["id"]] + [av]  # uma avaliacao por conversa (a ultima vale)
+        it["avaliacao"] = {"nota": nota, "motivo": av["motivo"], "comentario": av["comentario"]}
+        os.makedirs(os.path.dirname(ARQ_FEEDBACK), exist_ok=True)
+        with open(ARQ_FEEDBACK, "w", encoding="utf-8") as f:
+            json.dump(AVALIACOES, f, ensure_ascii=False, indent=1)
+        return av
+
+
+def feedback() -> dict:
+    """Painel de feedback: desempenho desta sessao, o que a Maya faz bem, onde pode melhorar (com a evidencia de cada ponto) e as
+    avaliacoes dos atendentes. Tudo calculado dos dados reais da sessao; os pontos fixos citam a fonte."""
+    with ESTADO_LOCK:
+        itens = list(MON["itens"])
+        avs = list(AVALIACOES)
+    n = len(itens)
+    por = lambda f: [i for i in itens if f(i)]
+    pessoa = por(lambda i: i["precisa_humano"])
+    aguarda = por(lambda i: i["desfecho"] in AGUARDA)
+    lacunas = por(lambda i: any("Lacuna na base" in p for p in i["passos"]))
+    dois = por(lambda i: any("Segundo assunto" in p for p in i["passos"]))
+    tempo = [i["segundos"] for i in itens if i["segundos"]]
+    pc = lambda k: f"{round(100 * k / n)}%" if n else "–"
+    ruins = [a for a in avs if a["nota"] == "ruim"]
+    desempenho = {"conversas": n, "sem_humano": pc(len(itens) - len(pessoa)), "precisam_humano": len(pessoa), "aguardando_cliente": len(aguarda),
+                  "tempo_medio": round(sum(tempo) / len(tempo), 1) if tempo else None,
+                  "avaliacoes": len(avs), "aprovacao": f"{round(100 * (len(avs) - len(ruins)) / len(avs))}%" if avs else "–"}
+    fortes = []
+    if n:
+        fortes.append(f"Atendeu {n} conversas respondendo sozinha em {desempenho['tempo_medio']} s em média, sem fila: {desempenho['sem_humano']} sem humano.")
+        if pessoa:
+            fortes.append(f"Chamou uma pessoa só em {len(pessoa)} casos ({pc(len(pessoa))}), todos por motivo sério: "
+                          + "; ".join(sorted({i['desfecho_rotulo'] for i in pessoa})) + ".")
+        if dois:
+            fortes.append(f"Tratou {len(dois)} mensagens com dois assuntos na mesma conversa.")
+    fortes += ["Não repete CPF, telefone nem cartão e ignora ordens escritas pelo cliente (testado).",
+               "Não acusa o cliente: suspeita e saúde usam texto fixo e vão para uma pessoa.",
+               "Cada resposta é conferida por um Verificador (números e promessas precisam de apoio nos fatos)."]
+    mel = []
+    if aguarda:
+        cats = {}
+        for i in aguarda:
+            cats[i["categoria"]] = cats.get(i["categoria"], 0) + 1
+        top = ", ".join(f"{k} ({v})" for k, v in sorted(cats.items(), key=lambda x: -x[1])[:3])
+        mel.append({"prioridade": "alta", "titulo": "Continuar a conversa quando o cliente responde",
+                    "evidencia": f"Em {len(aguarda)} das {n} conversas ({pc(len(aguarda))}) a Maya pediu algo ao cliente (foto, pedido, detalhe): {top}. "
+                                 "Hoje a conversa é de uma mensagem por vez, então não sabemos quantas terminam resolvidas.",
+                    "sugestao": "Ciclo de vários turnos: receber a réplica, retomar a ação pendente (reenvio depois da foto, por exemplo).", "esforco": "alto"})
+    if lacunas:
+        mel.append({"prioridade": "média", "titulo": "Completar a base de conhecimento",
+                    "evidencia": f"{len(lacunas)} perguntas não tiveram resposta fundamentada na base (a Maya não inventa; pede o detalhe).",
+                    "sugestao": "Incluir essas perguntas e respostas na ficha dos produtos ou nas políticas.", "esforco": "baixo"})
+    if ruins:
+        motivos = {}
+        for a in ruins:
+            motivos[a["motivo"] or "sem motivo"] = motivos.get(a["motivo"] or "sem motivo", 0) + 1
+        mel.append({"prioridade": "alta", "titulo": "Corrigir o que os atendentes marcaram como ruim",
+                    "evidencia": f"{len(ruins)} avaliações negativas de {len(avs)}: " + ", ".join(f"{k} ({v})" for k, v in motivos.items()) + ".",
+                    "sugestao": "Abrir cada caso avaliado, achar a causa (política, tom, triagem) e transformar em teste.", "esforco": "médio"})
+    mel += [
+        {"prioridade": "média", "titulo": "Abrir chamado na transportadora com mais precisão",
+         "evidencia": "Na validação contra 1.082 conversas de rastreio/atraso, a regra escrita acerta 29% dos chamados que a equipe abre (DIARIO, entrada 23).",
+         "sugestao": "Calibrar o gatilho com a prática da equipe, em modo sombra.", "esforco": "médio"},
+        {"prioridade": "média", "titulo": "Executar a troca de endereço",
+         "evidencia": "Hoje a Maya pede o endereço completo e para: não lê a resposta nem altera o pedido.",
+         "sugestao": "Extrair o endereço da réplica e chamar alterar_endereco antes da separação.", "esforco": "médio"},
+        {"prioridade": "baixa", "titulo": "Provar o valor do acolhimento",
+         "evidencia": "Na base, a abertura com empatia não elevou o CSAT (3,71 contra 3,84, com confusão); o que mais pesa é a velocidade: primeira resposta acima de 30 min cai para 3,07.",
+         "sugestao": "Medir CSAT das respostas da Maya em modo sombra antes de afirmar ganho.", "esforco": "baixo"},
+        {"prioridade": "média", "titulo": "Revisão humana das respostas em escala",
+         "evidencia": "O texto da Maya passa por Verificador e filtros, mas só uma amostra pequena foi lida por uma pessoa.",
+         "sugestao": "Usar esta aba: 👍/👎 com motivo em cada caso, e revisar semanalmente os 👎.", "esforco": "baixo"},
+    ]
+    return {"desempenho": desempenho, "fortes": fortes, "melhorias": mel, "avaliacoes": list(reversed(avs)), "motivos_ruins": MOTIVOS_RUINS}
+
+
 # ---------------------------------------------------------------- outras abas
 def estado() -> dict:
     metricas = None
@@ -217,7 +315,7 @@ def estado() -> dict:
                     "pessoa": sum(v for k, v in cont.items() if k in PESSOA) / n,
                     "segundos_mediana": sorted(seg)[len(seg) // 2] if seg else None}
     return {"token": agentes.disponivel(), "modelos": {"triagem": modelos.PRINCIPAL, "redator": modelos.SUB},
-            "colega": colega.EXEMPLOS, "metricas": metricas, "base": "amostra" if dados.usando_amostra() else "completa"}
+            "colega": colega.EXEMPLOS, "motivos": MOTIVOS_RUINS, "metricas": metricas, "base": "amostra" if dados.usando_amostra() else "completa"}
 
 
 def falar_com_colega(texto: str, area: str, autor: str) -> dict:
@@ -251,6 +349,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(estado())
         if u.path == "/api/monitor":
             return self._json(monitor())
+        if u.path == "/api/feedback":
+            return self._json(feedback())
         if u.path == "/api/item":
             cid = parse_qs(u.query).get("id", [""])[0]
             with ESTADO_LOCK:
@@ -273,6 +373,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._json(controlar(corpo))
             if self.path == "/api/humano":
                 return self._json(humano(corpo))
+            if self.path == "/api/avaliar":
+                return self._json(avaliar(corpo))
             if self.path == "/api/colega":
                 return self._json(falar_com_colega(str(corpo["texto"])[:600], str(corpo.get("area", "")), str(corpo.get("autor", ""))))
             self.send_error(404)
@@ -287,6 +389,6 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     _preparar_fila()
     threading.Thread(target=_worker, daemon=True).start()
-    print(f"GoColega (interface local): http://127.0.0.1:{PORTA}  | base {'amostra' if dados.usando_amostra() else 'completa'} | "
+    print(f"Maya (interface local): http://127.0.0.1:{PORTA}  | base {'amostra' if dados.usando_amostra() else 'completa'} | "
           f"token {'sim' if agentes.disponivel() else 'NAO (so regras)'} | fila de {len(MON['fila'])} conversas (monitor parado ate iniciar)", flush=True)
     ThreadingHTTPServer(("127.0.0.1", PORTA), Handler).serve_forever()

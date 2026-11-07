@@ -265,6 +265,11 @@ Legenda de status: ✅ resolvido · ⚠️ aberto (lacuna conhecida)
 - **Continuam com pessoa (por serem sérios ou por regra):** caso sensível e pergunta de saúde; suspeita de fraude (Detetive); valor acima da alçada do agente (reenvio/troca > R$ 200, reembolso > R$ 100: a política do desafio exige aprovação do supervisor, não dá para o agente decidir).
 - **Risco aceito:** o agente pode pedir detalhes a quem queria falar com uma pessoa; sem o ciclo de várias mensagens, não medimos quantos desses casos terminam resolvidos. 232 testes passam; 15 foram reescritos para o comportamento novo.
 
+### 37. ✅ Trava do segundo assunto pegava cobrança duplicada
+- **Erro (achado na folha de revisão):** num pedido com 'devolver a capinha' e 'fui cobrada duas vezes', depois do reembolso a Maya perguntou 'é um problema com outro item?' sobre a cobrança em dobro.
+- **Causa:** a trava que impede segunda ação de dinheiro no mesmo pedido incluía a categoria Financeiro, mas a cobrança duplicada é outra transação.
+- **Correção:** Financeiro saiu da trava (a rota já confere o gateway e devolve só o valor a mais).
+
 ---
 
 ## Pendências abertas

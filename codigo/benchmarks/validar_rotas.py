@@ -1,4 +1,4 @@
-"""Valida as rotas do GoColega contra o que a equipe HUMANA fez nas mesmas conversas (acoes_executadas_sistemas.csv).
+"""Valida as rotas da Maya contra o que a equipe HUMANA fez nas mesmas conversas (acoes_executadas_sistemas.csv).
 
 Entrada: lote_resultados.csv (gerado por analisar_lote/lote), so as conversas do historico (a fila aberta nao tem desfecho).
 Saida: docs/validacao_rotas.md, com, por acao de efeito (reenviar, reembolsar, trocar, cancelar, chamado, endereco...):

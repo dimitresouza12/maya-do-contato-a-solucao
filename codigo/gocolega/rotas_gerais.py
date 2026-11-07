@@ -2,7 +2,7 @@
 cupom e promocao, troca. Cada uma segue a regra de politicas.csv (secao 'categorias') e so chama um humano
 quando a politica exige (valor acima da alcada) ou quando falta informacao que so uma pessoa tem.
 
-Principios (os mesmos do resto do GoColega): o codigo decide, o modelo so redige; nunca age sem pedido claro do
+Principios (os mesmos do resto da Maya): o codigo decide, o modelo so redige; nunca age sem pedido claro do
 cliente (cancelar, reembolsar e trocar exigem a intencao explicita no texto); sem o dado que falta, PERGUNTA ao
 cliente em vez de chamar uma pessoa; texto fixo de fallback com os fatos exatos.
 """

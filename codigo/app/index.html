@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GoColega</title>
+<title>Maya</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -72,19 +72,29 @@ code{font:.76rem/1.4 ui-monospace,Consolas,monospace}
 .barra{display:grid;grid-template-columns:260px 1fr 50px;gap:10px;align-items:center;margin:6px 0;font-size:.85rem}
 .barra div i{display:block;height:14px;border-radius:7px;background:var(--azul)}
 .nota{color:var(--suave);font-size:.8rem;margin-top:10px}
+.duas{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:900px){.duas{grid-template-columns:1fr}}
+.melhoria{border:1px solid var(--linha);border-left:5px solid var(--alerta);border-radius:12px;padding:10px 14px;margin-bottom:10px;background:var(--fundo)}
+.melhoria.alta{border-left-color:var(--crit)}.melhoria.baixa{border-left-color:var(--ciano)}
+.melhoria b{display:block;color:var(--azul-esc)}.melhoria p{margin:3px 0;font-size:.85rem}.melhoria small{color:var(--suave)}
+.forte{display:flex;gap:8px;margin:6px 0;font-size:.88rem}.forte:before{content:"✔";color:var(--ok);font-weight:700}
+.aval{border:1px solid var(--linha);border-radius:10px;padding:6px 12px;margin-bottom:6px;font-size:.84rem}
+.aval.bom{border-left:5px solid var(--ok)}.aval.ruim{border-left:5px solid var(--crit)}
+.avaliar{margin-top:12px;border:1px solid var(--linha);border-radius:12px;padding:10px 14px;background:var(--fundo)}
+.avaliar h3{margin:0 0 6px;font-size:.88rem;color:var(--azul-esc)}
 .erro{color:var(--crit);font-weight:600;margin-top:10px}
 .vazio{color:var(--suave);padding:26px;text-align:center}
 </style>
 </head>
 <body>
 <header>
-  <h1>GoColega</h1><span class="pilula">Gogroup · GoHacks 2026</span>
+  <h1>Maya</h1><span class="pilula">Gogroup · GoHacks 2026</span>
   <span class="sub">Agente de atendimento Gocase e GoBeauté</span>
   <div class="selos" id="selos"></div>
 </header>
 <nav id="abas">
   <button data-aba="atend" class="on">Atendimento<span class="badge" id="badge" hidden></span></button>
   <button data-aba="time">Canal do time</button>
+  <button data-aba="fb">Feedback</button>
   <button data-aba="res">Resultados</button>
 </nav>
 <main>
@@ -112,7 +122,7 @@ code{font:.76rem/1.4 ui-monospace,Consolas,monospace}
         <p class="nota">Não há Slack real nem pedidos de exemplo na base: estes foram escritos por nós para demonstrar cada rota. O canal é simulado.</p></div>
       <div>
         <h2>Como usar</h2>
-        <p class="nota" style="margin:0 0 12px">Clique num pedido à esquerda (ou escreva um) e em <b>Responder pedido</b>: o GoColega responde como responderia a esse colega no Slack.</p>
+        <p class="nota" style="margin:0 0 12px">Clique num pedido à esquerda (ou escreva um) e em <b>Responder pedido</b>: A Maya responde como responderia a esse colega no Slack.</p>
         <select id="area"><option>logistica</option><option>qualidade</option><option>marketing</option><option>comercial</option><option>supervisao</option></select>
         <textarea id="ctexto" style="margin-top:10px" placeholder="Escreva como um colega escreveria no canal."></textarea>
         <div class="linha"><button class="btn" id="cenviar">Responder pedido</button><span id="ctempo" class="nota"></span></div>
@@ -120,6 +130,7 @@ code{font:.76rem/1.4 ui-monospace,Consolas,monospace}
       </div>
     </div>
   </section>
+  <section id="fb" hidden><div id="feedback"></div></section>
   <section id="res" hidden><div id="resumo"></div></section>
 </main>
 <script>
@@ -132,7 +143,8 @@ const CANAL = {whatsapp:'WhatsApp', email:'E-mail', reclame_aqui:'Reclame Aqui'}
 
 document.querySelectorAll('#abas button').forEach(b => b.onclick = () => {
   document.querySelectorAll('#abas button').forEach(x => x.classList.toggle('on', x === b));
-  ['atend','time','res'].forEach(id => $('#'+id).hidden = id !== b.dataset.aba);
+  ['atend','time','fb','res'].forEach(id => $('#'+id).hidden = id !== b.dataset.aba);
+  if (b.dataset.aba === 'fb') carregarFeedback();
 });
 async function api(url, corpo) {
   const r = await fetch(url, corpo ? {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(corpo)} : undefined);
@@ -198,7 +210,7 @@ async function carregarDetalhe() {
   const chat = el('div', 'chat');
   const c = el('div', 'bolha cli'); c.append(el('small', '', 'Cliente'), document.createTextNode(it.cliente)); chat.append(c);
   if (!it.mensagens.length) chat.append(el('div', 'evento', '(o agente não escreveu ao cliente)'));
-  it.mensagens.forEach(m => { const b = el('div', 'bolha ag'); b.append(el('small', '', m.publico ? 'GoColega · resposta PÚBLICA no Reclame Aqui, enviada automaticamente (simulado)' : 'GoColega · enviado automaticamente'), document.createTextNode(m.texto)); chat.append(b); });
+  it.mensagens.forEach(m => { const b = el('div', 'bolha ag'); b.append(el('small', '', m.publico ? 'Maya · resposta PÚBLICA no Reclame Aqui, enviada automaticamente (simulado)' : 'Maya · enviado automaticamente'), document.createTextNode(m.texto)); chat.append(b); });
   it.humano.forEach(h => { if (h.tipo === 'evento') chat.append(el('div', 'evento', `${h.quando} · ${h.quem} ${h.texto}`));
     else { const b = el('div', 'bolha hum'); b.append(el('small', '', `${h.quem} · ${h.quando}${h.publico ? ' · publicação simulada' : ' · envio simulado'}`), document.createTextNode(h.texto)); chat.append(b); } });
   d.append(chat, el('span', 'sel ' + (COR[it.desfecho] || 'neutro'), it.desfecho_rotulo), el('span', 'sel neutro', 'Assunto: ' + it.categoria), el('span', 'sel neutro', it.segundos + ' s de atendimento do agente'));
@@ -219,6 +231,14 @@ async function carregarDetalhe() {
     }
     d.append(a);
   }
+  const av = el('div', 'avaliar'); av.append(el('h3', '', 'Avaliar o que a Maya fez nesta conversa'));
+  if (it.avaliacao) av.append(el('p', 'nota', `Sua avaliação: ${it.avaliacao.nota === 'bom' ? '👍 bom' : '👎 ruim'}${it.avaliacao.motivo ? ' · ' + it.avaliacao.motivo : ''}${it.avaliacao.comentario ? ' · ' + it.avaliacao.comentario : ''}`));
+  const mot = el('select'); (ESTADO.motivos || []).forEach(m => mot.append(new Option(m, m)));
+  const com = el('input'); com.placeholder = 'Comentário (opcional): o que ela deveria ter feito?'; com.style.marginTop = '8px';
+  const lv = el('div', 'linha');
+  const bom = el('button', 'btn lima', '👍 Bom'); bom.onclick = () => avaliar(it.id, 'bom', '', com.value);
+  const ruim = el('button', 'btn verm', '👎 Ruim'); ruim.onclick = () => avaliar(it.id, 'ruim', mot.value, com.value);
+  lv.append(bom, mot, ruim); mot.style.width = 'auto'; av.append(lv, com); d.append(av);
   d.append(acoesChips(it.acoes));
   d.append(lista('Passo a passo do agente (' + it.passos.length + ')', it.passos, true));
   d.append(lista('Conversa entre os agentes (' + it.agentes.length + ' mensagens; * = modelo de IA)', it.agentes, false));
@@ -227,6 +247,28 @@ async function acao(id, a, texto) {
   try { await api('/api/humano', {id, acao: a, texto}); if (a === 'responder') delete RASC[id]; await carregarDetalhe(); await atualizar(); }
   catch (e) { alert('Erro: ' + e.message); }
 }
+async function avaliar(id, nota, motivo, comentario) {
+  try { await api('/api/avaliar', {id, nota, motivo, comentario}); await carregarDetalhe(); } catch (e) { alert('Erro: ' + e.message); }
+}
+async function carregarFeedback() {
+  const f = await api('/api/feedback'), box = $('#feedback'); box.replaceChildren();
+  const d = f.desempenho, cs = el('div', 'contadores');
+  [[d.conversas, 'conversas atendidas nesta sessão'], [d.sem_humano, 'sem humano'], [d.precisam_humano, 'precisaram de pessoa'],
+   [d.tempo_medio === null ? '–' : d.tempo_medio + ' s', 'tempo médio da Maya'], [d.avaliacoes, 'avaliações dos atendentes'], [d.aprovacao, 'aprovação (👍)']].forEach(([v, t]) => {
+    const c = el('div', 'cont'); c.append(el('b', '', String(v)), el('span', '', t)); cs.append(c); });
+  box.append(cs);
+  const duas = el('div', 'duas'), esq = el('div'), dir = el('div');
+  esq.append(el('h2', '', 'O que a Maya faz bem'));
+  f.fortes.forEach(t => esq.append(el('div', 'forte', t)));
+  esq.append(el('h2', '', 'Avaliações dos atendentes (' + f.avaliacoes.length + ')'));
+  if (!f.avaliacoes.length) esq.append(el('p', 'nota', 'Ainda nenhuma. Em Atendimento, abra uma conversa e marque 👍 ou 👎: o motivo e o comentário entram aqui e nos pontos de melhoria.'));
+  f.avaliacoes.forEach(a => { const x = el('div', 'aval ' + a.nota); x.append(el('b', '', `${a.nota === 'bom' ? '👍' : '👎'} ${a.id} · ${a.categoria}`), el('div', '', a.desfecho + (a.motivo ? ' · ' + a.motivo : '')));
+    if (a.comentario) x.append(el('div', 'nota', '“' + a.comentario + '”')); esq.append(x); });
+  dir.append(el('h2', '', 'Onde a Maya pode melhorar'));
+  f.melhorias.forEach(m => { const x = el('div', 'melhoria ' + m.prioridade); x.append(el('b', '', m.titulo), el('p', '', m.evidencia), el('p', '', 'Sugestão: ' + m.sugestao), el('small', '', `Prioridade ${m.prioridade} · esforço ${m.esforco}`)); dir.append(x); });
+  duas.append(esq, dir); box.append(duas);
+}
+setInterval(() => { if (!$('#fb').hidden) carregarFeedback(); }, 5000);
 $('#iniciar').onclick = async () => { MON = await api('/api/monitor/controle', {acao: MON && MON.rodando ? 'pausar' : 'iniciar', intervalo: $('#vel').value}); contadores(); };
 $('#reiniciar').onclick = async () => { SEL = null; VISTOS.clear(); RASC = {}; MON = await api('/api/monitor/controle', {acao: 'reiniciar'}); $('#detalhe').replaceChildren(el('div', 'vazio', 'Demonstração reiniciada.')); contadores(); desenharLista(); };
 $('#vel').onchange = () => api('/api/monitor/controle', {intervalo: $('#vel').value});
@@ -238,7 +280,7 @@ async function enviarColega() {
     const r = await api('/api/colega', {texto: $('#ctexto').value, area: $('#area').value, autor: 'Colega (' + $('#area').value + ')'});
     const s = $('#csaida'); s.replaceChildren(); const chat = el('div', 'chat');
     const q = el('div', 'bolha slack'); q.append(el('small', '', 'Colega · ' + $('#area').value), document.createTextNode($('#ctexto').value)); chat.append(q);
-    const a = el('div', 'bolha slack'); a.append(el('small', '', 'GoColega'), document.createTextNode(r.resposta)); chat.append(a);
+    const a = el('div', 'bolha slack'); a.append(el('small', '', 'Maya'), document.createTextNode(r.resposta)); chat.append(a);
     s.append(chat, el('span', 'sel ' + (COR[r.desfecho] || 'neutro'), r.desfecho.replace('_', ' ')), el('span', 'sel neutro', r.intencao.replaceAll('_', ' ')), acoesChips(r.acoes), lista('Passo a passo', r.passos, true));
     $('#ctempo').textContent = r.segundos + ' s';
   } catch (e) { $('#cerro').textContent = 'Erro: ' + e.message; $('#ctempo').textContent = ''; }

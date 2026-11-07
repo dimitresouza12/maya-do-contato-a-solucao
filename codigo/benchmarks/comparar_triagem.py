@@ -1,7 +1,7 @@
 """Compara quem classifica melhor a mensagem do cliente: Jev, gpt-5.6-luna, gpt-5.6-terra e as regras.
 
 Gabarito: tag_agente (escolhida manualmente por um atendente ao encerrar a conversa).
-Entrada: o MESMO texto que o GoColega recebe (mensagens do cliente concatenadas), com PII mascarada.
+Entrada: o MESMO texto que A Maya recebe (mensagens do cliente concatenadas), com PII mascarada.
 Todos recebem so os NOMES das categorias (nenhum recebe definicoes), para a comparacao ser justa.
 
 Uso (da raiz do repositorio):  python codigo/benchmarks/comparar_triagem.py [N=100] [SEMENTE=42]

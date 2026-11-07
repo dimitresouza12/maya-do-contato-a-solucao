@@ -1,4 +1,4 @@
-"""Orquestrador do GoColega: triagem -> sub-agente -> guardioes -> acao (ou 'levantar a mao').
+"""Orquestrador da Maya: triagem -> sub-agente -> guardioes -> acao (ou 'levantar a mao').
 
 Modelos (ver modelos.py): Jev na triagem; modelo PRINCIPAL (terra) roteia casos ambiguos e resume para o
 supervisor; modelo SUB (luna) julga a foto e escreve as respostas. O modelo PROPOE; o codigo VALIDA:
@@ -17,7 +17,8 @@ SEGUNDO_ASSUNTO = re.compile(r"\bah,?\s+e\b|\boutra coisa\b|\boutra d[uú]vida\b
                              r"\bal[eé]m disso\b|\bps:?\s", re.I)
 # Quem ja recebeu uma acao de dinheiro nesta conversa nao ganha outra no segundo assunto sem uma pessoa ver.
 ACOES_DINHEIRO = {"reenviar_produto", "reembolsar", "trocar_produto", "cancelar_pedido", "reimprimir_personalizacao"}
-CATEGORIAS_DINHEIRO = {"Avaria", "Produto faltando", "Reclamacao produto", "Troca", "Cancelamento", "Financeiro"}
+# Financeiro (cobranca em duplicidade) fica de fora: a rota ja confere o gateway e so devolve o valor cobrado a mais, que e outra transacao.
+CATEGORIAS_DINHEIRO = {"Avaria", "Produto faltando", "Reclamacao produto", "Troca", "Cancelamento"}
 # Do mais grave ao menos grave: o desfecho da conversa e o pior dos dois assuntos.
 ORDEM_DESFECHO = ["sensivel", "suspeita", "escalado", "aguardando_supervisor", "aguardando_aprovacao",
                   "aguardando_cliente", "fora_da_politica", "autonomo"]
@@ -52,7 +53,7 @@ LIMIAR_CONFIANCA = 0.70
 
 
 def acao_de(categoria: str) -> tuple:
-    """O que o GoColega FARIA com a categoria. Duas categorias com a mesma acao nao precisam de consenso exato
+    """O que A Maya FARIA com a categoria. Duas categorias com a mesma acao nao precisam de consenso exato
     (ex.: Rastreio e Atraso). Avaria e Produto faltando seguem politicas diferentes, entao divergem."""
     if CATEGORIA_POLITICA.get(categoria):
         return ("pos_venda", CATEGORIA_POLITICA[categoria])

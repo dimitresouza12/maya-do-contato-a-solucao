@@ -1,4 +1,4 @@
-"""Demo do GoColega no terminal. Uso:  python demo.py [cena]   (cena = 1..5 ou 'todas')"""
+"""Demo da Maya no terminal. Uso:  python demo.py [cena]   (cena = 1..5 ou 'todas')"""
 import os
 import sys
 
@@ -11,7 +11,7 @@ from gocolega import llm  # noqa: E402
 from gocolega.orquestrador import tratar  # noqa: E402
 
 CENAS = {
-    "1": ("Avaria legitima, dentro da alcada: o GoColega resolve sozinho", "AT105180", None),
+    "1": ("Avaria legitima, dentro da alcada: a Maya resolve sozinha", "AT105180", None),
     "2": ("Avaria suspeita (foto reutilizada + foto anterior a entrega): sinaliza ao supervisor", "AT108528", None),
     "3": ("Suspeita de valor alto (R$ 205): sinaliza e nao reenvia", "AT108179", None),
     "4": ("Tentativa de injecao de prompt: texto do cliente e DADO", "AT105180",
@@ -22,11 +22,11 @@ CENAS = {
           "Oi! Qual a validade do serum de niacinamida depois de aberto? Obrigada!"),
     "7": ("Atraso de 8 dias uteis: a politica manda oferecer reenvio OU reembolso, a escolha do cliente", "AT105718",
           "Meu pedido ainda nao chegou e ja passou muito do prazo. O que podem fazer?"),
-    "8": ("Mesmo atraso, o cliente escolhe o reembolso: GoColega executa (R$ 75,91, dentro da alcada de R$ 100)", "AT105718",
+    "8": ("Mesmo atraso, o cliente escolhe o reembolso: Maya executa (R$ 75,91, dentro da alcada de R$ 100)", "AT105718",
           "Meu pedido nao chegou e ja passou do prazo. Quero o reembolso, por favor."),
-    "9": ("Rastreio parado ha 3 dias uteis: GoColega abre chamado na transportadora e informa", "AT105041",
+    "9": ("Rastreio parado ha 3 dias uteis: Maya abre chamado na transportadora e informa", "AT105041",
           "O rastreio do meu pedido nao anda ha dias, onde esta?"),
-    "10": ("Reclame Aqui (resposta PUBLICA): o GoColega redige, mas nada e publicado sem aprovacao humana", "AT104736", None),
+    "10": ("Reclame Aqui (resposta PUBLICA): a Maya redige e responde (publicacao simulada), sem aprovacao previa", "AT104736", None),
     # a cena 11 (causa raiz e aviso proativo) e especial: ver rodar_causa_raiz()
 }
 
