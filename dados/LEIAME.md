@@ -4,7 +4,7 @@ Bases CSV **fictícias** do Desafio 1 (Atendimento ao Cliente), fornecidas pelo 
 
 | Pasta | O que é | No repositório? |
 |---|---|---|
-| `amostra/` | Recorte mínimo (16 KB, 9 tabelas) das 4 conversas da demo e dos testes, mais as fotos que elas compartilham com outros pedidos. Gerada por `codigo/ferramentas_dev/gerar_amostra.py` | **Sim** |
+| `amostra/` | Recorte mínimo (~100 KB, 13 tabelas, incluindo as fichas de produto, as políticas e o rastreio) das 6 conversas da demo e dos testes, mais as fotos que elas compartilham com outros pedidos. Gerada por `codigo/ferramentas_dev/gerar_amostra.py` | **Sim** |
 | `atendimento/` | Base completa (24 CSVs, ~11 MB) | **Não** (ver `.gitignore`) |
 
 **O código escolhe sozinho:** `GOCOLEGA_DATA_DIR` (se definido) → `dados/atendimento/` (se tiver `pedidos.csv`) → `dados/amostra/`. A demo mostra qual está em uso.

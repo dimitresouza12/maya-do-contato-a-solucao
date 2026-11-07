@@ -1,5 +1,7 @@
 customer_id,n_pedidos,receita_acumulada,n_trocas_12m,n_contatos_12m,nome,email,telefone,cpf,data_nascimento,data_cadastro,cidade,uf,cep,segmento,canal_preferido,aceita_comunicacao_whatsapp,aceita_comunicacao_email,ultimo_pedido_em
 CH383772,1,205.8,1,4,Nayara Silva,nayara_silva@yahoo.com.br,(71) 98662-4293,424.143.281-69,1991-01-04,2026-08-14 19:19:02,Lauro de Freitas,BA,42778-417,novo,whatsapp,sim,sim,2026-08-15
+CH468583,1,75.91,0,1,Rafaela Mendes,rafaelamendes57@gmail.com,(66) 99475-8087,647.070.892-75,1986-01-27,2026-07-21 20:21:16,Várzea Grande,MT,78134-928,novo,whatsapp,sim,não,2026-07-23
+CH482518,2,175.12,0,1,Cecília Machado,cecilia_machado69@gmail.com,(71) 97057-9106,858.135.581-10,1988-07-29,2026-05-17 05:10:22,Lauro de Freitas,BA,42717-324,recorrente,email,sim,sim,2026-08-01
 CH483361,2,299.71,1,2,Tainá Oliveira,taina_oliveira61@gmail.com,(44) 99396-7501,879.973.979-81,1984-09-08,2026-08-09 15:11:39,Maringá,PR,87071-989,recorrente,whatsapp,sim,sim,2026-08-23
 CH619054,2,252.37,2,1,Renan Mendes,renan_mendes@gmail.com,(11) 97912-3238,522.599.652-37,1999-07-21,2025-01-17 14:44:35,Santos,SP,11069-196,recorrente,whatsapp,sim,sim,2026-08-21
 CH994783,7,816.18,1,1,Giovana Alves,giovanaalves@outlook.com,(75) 96580-1677,075.251.109-21,1976-04-11,2025-05-04 22:27:40,Salvador,BA,42044-190,fiel,whatsapp,sim,sim,2026-10-27

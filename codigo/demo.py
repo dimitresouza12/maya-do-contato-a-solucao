@@ -20,6 +20,12 @@ CENAS = {
           "Usei o creme e minha pele ficou vermelha, com coceira e bolhas. Passei mal."),
     "6": ("Duvida de produto: responde pela BASE DE CONHECIMENTO (RAG), citando a ficha", "AT105180",
           "Oi! Qual a validade do serum de niacinamida depois de aberto? Obrigada!"),
+    "7": ("Atraso de 8 dias uteis: a politica manda oferecer reenvio OU reembolso, a escolha do cliente", "AT105718",
+          "Meu pedido ainda nao chegou e ja passou muito do prazo. O que podem fazer?"),
+    "8": ("Mesmo atraso, o cliente escolhe o reembolso: GoColega executa (R$ 75,91, dentro da alcada de R$ 100)", "AT105718",
+          "Meu pedido nao chegou e ja passou do prazo. Quero o reembolso, por favor."),
+    "9": ("Rastreio parado ha 3 dias uteis: GoColega abre chamado na transportadora e informa", "AT105041",
+          "O rastreio do meu pedido nao anda ha dias, onde esta?"),
 }
 
 

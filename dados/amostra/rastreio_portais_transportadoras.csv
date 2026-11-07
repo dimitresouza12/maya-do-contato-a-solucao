@@ -1,0 +1,31 @@
+portal,pedido_ref,data_hora_evento,status,local,previsao_entrega,codigo_rastreio
+Correio Ágil,GBH363467,2026-07-24 23:03:00,coletado,CD1,2026-07-31,CA382226673BR
+Correio Ágil,GBH363467,2026-07-26 03:35:00,em_transferencia,centro de distribuição da transportadora,2026-07-31,CA382226673BR
+Correio Ágil,GBH363467,2026-08-08 21:11:00,chegada_unidade_destino,unidade MT,2026-07-31,CA382226673BR
+Correio Ágil,GBH363467,2026-08-13 05:07:00,saiu_para_entrega,unidade MT,2026-07-31,CA382226673BR
+Correio Ágil,GBH363467,2026-08-13 10:32:00,entregue,destino MT,2026-07-31,CA382226673BR
+Expressa Já,GBH367391,2026-07-30 00:55:00,coletado,CD2,2026-08-04,EJ051896434BR
+Expressa Já,GBH367391,2026-07-30 12:11:00,em_transferencia,centro de distribuição da transportadora,2026-08-04,EJ051896434BR
+Expressa Já,GBH367391,2026-08-02 23:56:00,chegada_unidade_destino,unidade BA,2026-08-04,EJ051896434BR
+Expressa Já,GBH367391,2026-08-04 12:14:00,saiu_para_entrega,unidade BA,2026-08-04,EJ051896434BR
+Expressa Já,GBH367391,2026-08-04 16:28:00,entregue,destino BA,2026-08-04,EJ051896434BR
+Expressa Já,GBH372359,2026-08-04 09:21:00,coletado,CD1,2026-08-07,EJ230046185BR
+Expressa Já,GBH372359,2026-08-04 21:40:00,em_transferencia,centro de distribuição da transportadora,2026-08-07,EJ230046185BR
+Expressa Já,GBH372359,2026-08-07 23:09:00,chegada_unidade_destino,unidade BA,2026-08-07,EJ230046185BR
+Expressa Já,GBH372359,2026-08-10 08:42:00,saiu_para_entrega,unidade BA,2026-08-07,EJ230046185BR
+Expressa Já,GBH372359,2026-08-10 12:47:00,entregue,destino BA,2026-08-07,EJ230046185BR
+Rápido Sul,GCH532004,2026-08-17 19:55:00,coletado,CD1,2026-08-20,RPS814847737
+Rápido Sul,GCH532004,2026-08-18 18:18:00,em_transferencia,centro de distribuição da transportadora,2026-08-20,RPS814847737
+Rápido Sul,GCH532004,2026-08-19 13:42:00,chegada_unidade_destino,unidade PR,2026-08-20,RPS814847737
+Rápido Sul,GCH532004,2026-08-20 04:00:00,saiu_para_entrega,unidade PR,2026-08-20,RPS814847737
+Rápido Sul,GCH532004,2026-08-20 10:21:00,entregue,destino PR,2026-08-20,RPS814847737
+ViaLog,GCH533082,2026-08-19 20:25:00,coletado,CD2,2026-08-26,VL84116599282
+ViaLog,GCH533082,2026-08-20 15:51:00,em_transferencia,centro de distribuição da transportadora,2026-08-26,VL84116599282
+ViaLog,GCH533082,2026-08-23 18:28:00,chegada_unidade_destino,unidade BA,2026-08-26,VL84116599282
+ViaLog,GCH533082,2026-08-26 09:01:00,saiu_para_entrega,unidade BA,2026-08-26,VL84116599282
+ViaLog,GCH533082,2026-08-26 12:35:00,entregue,destino BA,2026-08-26,VL84116599282
+ViaLog,GCH535004,2026-08-26 23:49:00,coletado,CD2,2026-08-28,VL50750070596
+ViaLog,GCH535004,2026-08-27 10:27:00,em_transferencia,centro de distribuição da transportadora,2026-08-28,VL50750070596
+ViaLog,GCH535004,2026-08-28 01:54:00,chegada_unidade_destino,unidade SP,2026-08-28,VL50750070596
+ViaLog,GCH535004,2026-08-28 07:46:00,saiu_para_entrega,unidade SP,2026-08-28,VL50750070596
+ViaLog,GCH535004,2026-08-28 14:14:00,entregue,destino SP,2026-08-28,VL50750070596

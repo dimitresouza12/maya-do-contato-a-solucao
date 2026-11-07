@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.join(RAIZ, "codigo"))
 
 from gocolega import dados  # noqa: E402
 
-CONVERSAS = ["AT105180", "AT108528", "AT108179", "AT107296"]  # cenas da demo e dos testes
+CONVERSAS = ["AT105180", "AT108528", "AT108179", "AT107296", "AT105718", "AT105041"]  # cenas da demo e dos testes
 DESTINO = os.path.join(RAIZ, "dados", "amostra")
 
 
@@ -38,6 +38,10 @@ def main():
         "anexos_conversas": "select * from anx",
         "trocas_reenvios": "select * from trocas_reenvios where order_id_original in (select order_id from ped)",
         "ferramentas": "select * from ferramentas",
+        # rastreio e chamados dos pedidos da demo (sem eles, as cenas de atraso e rastreio mudam de resultado)
+        "rastreio_portais_transportadoras": "select * from rastreio_portais_transportadoras "
+                                            "where codigo_rastreio in (select codigo_rastreio from ped)",
+        "chamados_transportadora": "select * from chamados_transportadora where order_id in (select order_id from ped)",
         # base de conhecimento (RAG): fichas de produto e politicas completas (sao pequenas)
         "produtos": "select * from produtos",
         "politicas": "select * from politicas",

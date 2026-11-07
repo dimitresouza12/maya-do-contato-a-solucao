@@ -1,5 +1,7 @@
 item_id,order_id,linha,sku,descricao,tipo_item,quantidade,preco_unitario,desconto_rateado,valor_total,personalizacao,texto_personalizacao,lote
+GBH363467-1,GBH363467,1,YNZ-5001,Creme de Pentear Cachos Definidos 1kg,venda,1,79.9,3.99,75.91,,,LT2605-B
 GBH367391-1,GBH367391,1,KSH-5002,Sérum Niacinamida 10% + Zinco 30ml,venda,1,99.9,0.0,99.9,,,LT2604-E
+GBH372359-1,GBH372359,1,KSH-5007,Água Micelar 200ml,venda,1,49.9,0.0,49.9,,,LT2606-H
 GCH532004-1,GCH532004,1,GOC-5064,Tote Bag Daily Personalizada Nome,venda,1,219.9,32.99,186.91,nome,Matheus,
 GCH533082-1,GCH533082,1,GOC-5067,Mini Tote Personalizada Iniciais,venda,1,189.9,0.0,189.9,iniciais,N.S.,
 GCH535004-1,GCH535004,1,GOC-5034,Case Anti Impacto Slim Standard / Motorola Moto G84 5G Personalizada Foto,venda,1,64.9,0.0,64.9,foto,,

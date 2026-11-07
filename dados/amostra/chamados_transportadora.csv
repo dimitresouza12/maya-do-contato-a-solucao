@@ -1,0 +1,2 @@
+chamado_id,transportadora,order_id,codigo_rastreio,conversation_id,acao_id,aberto_por,data_abertura,motivo,prazo_resposta,status,data_resposta,resposta_transportadora,nova_previsao_entrega,data_encerramento
+EXJ-202600015,Expressa Já,GBH372359,EJ230046185BR,AT105041,AC000172,atendente_19,2026-08-08 08:38:46,atraso_na_entrega,2026-08-10 08:38:46,encerrado,2026-08-09 23:47:37,Objeto retido na unidade de Jaboatão (PE) por atraso operacional. Nova previsão: 13/08/2026.,2026-08-13,2026-08-10 12:47:00

@@ -1,4 +1,7 @@
 conversation_id,message_id,autor,timestamp,texto
+AT105041,MS0000455,cliente,2026-08-07 12:47:00,"Meu pedido tá parado no centro de distribuição da Expressa Já em Simões Filho (BA) desde 05/08 mds. Pedido GBH372359. Obrigada, Cecília"
+AT105041,MS0000456,bot,2026-08-07 12:49:07,"Olá! Esta é uma resposta automática: sua mensagem foi recebida e será respondida em até 24 horas. Protocolo #4895207. Equipe Kokeshi"
+AT105041,MS0000457,agente,2026-08-08 08:38:46,"Oi, Cecília! Seu pedido está com a Expressa Já, previsão até 07/08. Vi que o rastreio está parado, então já abri um chamado com a transportadora. Aqui é o Lucas."
 AT105180,MS0000634,bot,2026-08-08 17:57:05,"Olá, tudo bem? Você está falando com o atendimento Kokeshi. Em instantes uma pessoa do time continua com você."
 AT105180,MS0000635,cliente,2026-08-08 17:59:56,"Parabéns pela embalagem, o sérum de niacinamida cegou destruído 👏"
 AT105180,MS0000636,agente,2026-08-08 18:05:35,"Me passa o número do pedido, por favor?"
@@ -6,6 +9,12 @@ AT105180,MS0000637,cliente,2026-08-08 18:10:13,pedido GBH367391
 AT105180,MS0000638,agente,2026-08-08 18:23:31,"Que chato, Giovana! Pode me enviar uma foto do produto e da embalagem? Daniela, atendimento Kokeshi."
 AT105180,MS0000639,cliente,2026-08-08 18:34:47,[imagem] [imagem]
 AT105180,MS0000640,agente,2026-08-08 18:42:13,"Obrigada, Giovana! Registrei aqui e o reenvio sai em até 2 dias úteis."
+AT105718,MS0001249,bot,2026-08-12 12:40:23,"Olá, tudo bem? Você está falando com o atendimento Yenzah. Em instantes uma pessoa do time continua com você."
+AT105718,MS0001250,cliente,2026-08-12 12:41:12,Vocês prometeram entregar até 31/07 e nada até hoje
+AT105718,MS0001251,cliente,2026-08-12 12:42:14,Vou abrir reclamação no Reclame Aqui.
+AT105718,MS0001252,agente,2026-08-12 12:48:22,"Rafaela, como o atraso já passou de 7 dias úteis, vou providenciar o reenvio do seu pedido sem custo. O novo código chega em até 2 dias úteis. Abraço, Lucas."
+AT105718,MS0001253,cliente,2026-08-12 13:02:59,"tá, vou aguardar"
+AT105718,MS0001254,agente,2026-08-12 13:12:43,Qualquer novidade te aviso por aqui.
 AT107296,MS0003054,bot,2026-08-24 09:35:28,Oi! Aqui é a assistente virtual da Gocase. Me conta o que aconteceu ou envie o número do seu pedido 😊
 AT107296,MS0003055,cliente,2026-08-24 09:36:18,A tote bag veio com um rasgo no tecido. Tenho as fotos.
 AT107296,MS0003056,agente,2026-08-24 09:52:06,Consegue me mandar o número do pedido pra eu localizar?

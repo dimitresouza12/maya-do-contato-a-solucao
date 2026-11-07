@@ -148,13 +148,90 @@ Legenda de status: ✅ resolvido · ⚠️ aberto (lacuna conhecida)
 - **Teste:** `test_ler_conversa_devolve_data_como_datetime_mesmo_com_fila_vazia` e `test_conversa_da_fila_tambem_e_encontrada`.
 - **Lição:** rodar a suíte com a amostra mínima expôs uma dependência escondida da forma da base completa.
 
+### 20. ✅ "46% autônomo" enganava: 94% só informava o status
+- **Erro:** o lote de 210 conversas mostrou "autônomo" em 97 casos (46%), mas **91 só informaram o status** ao cliente. Apenas **6 (2,9% do total)** executaram um reenvio.
+- **Como apareceu:** o lote e a análise por tipo de ação (`analisar_lote.py`).
+- **Decisão:** nunca reportar "autônomo" sem separar **"informou"** de **"executou ação"**. O número de 46% não vai para os slides.
+- **Solução:** `analisar_lote.py` quebra o "autônomo" pelas ações realmente executadas.
+- **Teste:** não se aplica (medição).
+
+### 21. ✅ Rastreio e Atraso não seguiam a política
+- **Erro:** o GoColega só informava o status e a previsão. Não calculava dias úteis, não abria chamado na transportadora e não oferecia reenvio ou reembolso. Rastreio e Atraso eram **95 dos 210 casos** do lote (45%).
+- **Como apareceu:** a análise do item 20, lida junto com a política `atraso_entrega` do `politicas.csv`.
+- **Decisão:** implementar a política, calculando a situação **só com dados até a data da conversa**. A base traz a posição de 02/11, e usá-la numa conversa antiga mostraria "entregue" antes da hora.
+- **Solução:** `rastreio.py` (dias úteis com feriados, chamado, opções ao cliente), ligado em `orquestrador._rastreio`, mais `reembolsar` nas ferramentas e `atraso_entrega` na política.
+- **Teste:** 22 testes nas três categorias, entre eles `test_situacao_nao_vaza_o_futuro`, `test_atraso_acima_de_7_du_oferece_as_duas_opcoes_e_espera_o_cliente` e `test_valor_pedido_no_texto_do_cliente_nunca_vira_o_valor_do_reembolso`.
+- **Validação contra os humanos** (1.082 conversas etiquetadas Rastreio ou Atraso): quando o GoColega oferece reenvio ou reembolso, **os humanos reenviaram em 148 de 148**; ele cobre 148 dos 174 reenvios por atraso ou extravio dos humanos (**85%**).
+
+### 22. ✅ Abrir chamado acima de 7 dias úteis foi iniciativa minha, sem apoio nos dados
+- **Erro:** eu tinha feito o GoColega abrir chamado também com atraso acima de 7 dias úteis e em extravio. A política só manda reenviar ou reembolsar nesses casos.
+- **Como apareceu:** a validação contra os humanos: eles abriram chamado em **0 dos 70 casos** com mais de 7 dias úteis de atraso.
+- **Decisão:** seguir a política escrita, sem acrescentar ações.
+- **Solução:** `rastreio.decidir` não abre chamado em `atraso_grave` nem em `extravio` (extravio ainda aciona a logística).
+- **Teste:** `test_atraso_acima_de_7_du_oferece_as_duas_opcoes_e_espera_o_cliente`, `test_extravio_confirmado_aciona_logistica_e_oferece_opcoes_sem_chamado`.
+
+### 23. ⚠️ Os humanos abrem chamado antes dos 3 dias úteis que a política escreve
+- **Achado:** dos 375 chamados registrados, 356 são `rastreio_sem_atualizacao`. A taxa em que o humano abre chamado cresce com os dias úteis de rastreio parado, mas já é alta cedo: **36%, 51%, 58% e 83%** com 0, 1, 2 e 3 ou mais dias. A política escrita pede chamado só a partir de 3.
+- **Como apareceu:** análise de quando os chamados são abertos (`chamados_transportadora` cruzado com os eventos dos portais).
+- **Decisão:** **manter a regra escrita** (3 dias úteis). Abrir mais cedo é prática da equipe, não política. Calibrar em modo sombra, com o supervisor.
+- **Medição final (1.082 conversas, só chamado novo, depois de remover o chamado acima de 7 du):** o GoColega abriria chamado em 360 conversas e o humano abriu em 303 (28%). Coincidem em **105**: **precisão 29%, cobertura 35%, concordância 58%**. Ou seja, **a regra de chamado é fraca contra a prática dos atendentes**: 255 chamados que o GoColega abriria o humano não abriu, e 198 que o humano abriu o GoColega não abriria. Já a parte de **reenvio ou reembolso** (item 21) bate muito bem.
+- **Leitura honesta:** a política escrita (3 du parado ou até 7 du de atraso) não descreve o que a equipe faz. Abrir chamado é barato, mas 255 chamados a mais seriam ruído para a transportadora.
+- **Status:** aberto. Calibrar com a supervisão em modo sombra antes de ligar a abertura automática de chamado.
+
+### 24. ✅ A primeira medição de chamado contava o chamado já existente como "novo"
+- **Erro de medição:** a validação inicial deu precisão de 21% e cobertura de 35% para "abrir chamado", porque tratava como chamado do GoColega também o chamado que já existia de uma conversa anterior.
+- **Como apareceu:** ao conferir a própria medição antes de interpretar o resultado.
+- **Decisão:** comparar só o **chamado novo** (`plano.abrir_chamado`).
+- **Solução:** `validar_rastreio.py` e a análise separam chamado novo de chamado existente.
+
+### 25. ✅ O lote consultava uma tabela que o acesso aos dados não conhecia
+- **Erro:** `CatalogException: tempo_por_conversa does not exist` no resumo final do lote, depois dos 210 casos.
+- **Como apareceu:** execução do lote. Os resultados já estavam gravados em CSV.
+- **Solução:** `tempo_por_conversa` registrada em `dados.TABELAS`; a análise virou um script separado (`analisar_lote.py`) que lê o CSV.
+
+### 26. ✅ RAG: cobertura enganosa, resposta saindo de política interna e afirmação sem apoio
+- **Erros achados por testes e pela leitura da primeira saída:**
+  - uma política irrelevante aparecia com "cobertura 100%", porque cada índice só contava os termos que conhecia;
+  - a pergunta `'; DROP TABLE produtos; --` recebeu como resposta uma linha de **política interna** (`duvida_produto.tag_equivalente`);
+  - o filtro de fundamentação só via números e citações, então "este produto cura acne [produto:KSH-5002]" passaria.
+- **Decisão:** a cobertura é medida contra **todos** os termos da pergunta; termo que nenhuma fonte conhece pesa como o idf **mediano** (pesar como o máximo mandava para uma pessoa até o cliente educado que escreve "obrigada, bom dia"); **só ficha de produto** responde ao cliente; pergunta de **saúde** nunca é respondida pela base; resposta do modelo sem apoio lexical na ficha é descartada.
+- **Solução:** `conhecimento.py`, `duvida.py` e `fundamentacao.termos_sem_apoio`. Se o modelo falhar ou for reprovado, a resposta é a linha da ficha, ipsis litteris.
+- **Teste:** `test_pergunta_de_saude_nunca_e_respondida_pela_base`, `test_cobertura_e_medida_contra_todos_os_termos_da_pergunta`, `test_pergunta_vazia_gigante_ou_hostil_nao_quebra_a_consulta` (inclui o `DROP TABLE`), `test_cliente_educado_com_saudacao_ainda_e_respondido`, `test_resposta_do_modelo_fora_das_regras_cai_para_a_linha_da_ficha` (4 variações).
+- **Limite:** a busca é BM25, **lexical**: não entende sinônimos. O proxy não oferece embeddings (testado: 404).
+
+### 27. ✅ Agentes que conversam: três defeitos antes de passar
+- **Erros:** (a) o campo `dialogo` da classe `Resultado` sombreava o **módulo** `dialogo` na própria anotação e quebrava a importação; (b) um `Resultado` criado sem passar por `_tratar` não tinha barramento e quebrava o pós-venda; (c) em revisão de código, antes de rodar, vi que `redigir` **truncava** `fatos` e `fallback` no conteúdo real da mensagem (o corte devia ser só na exibição).
+- **Como apareceram:** (a) e (b) na suíte; (c) na minha revisão.
+- **Decisão:** o barramento nasce junto com o `Resultado`; o conteúdo vai inteiro ao agente.
+- **Solução:** campo renomeado para `bus`, criado por `default_factory`; truncamento removido do conteúdo real.
+- **Teste:** `test_fluxo_muda_quando_o_detetive_contesta`, `test_fluxo_muda_conforme_o_veredito_do_guardiao` (3 variações), `test_redator_corrige_apos_a_critica_do_verificador`, `test_revisoes_esgotadas_caem_no_texto_fixo`, `test_verificador_barra_texto_que_acusa_o_cliente`.
+- **Limite honesto:** o diálogo é síncrono (pergunta e resposta), não um enxame assíncrono.
+
+### 28. ✅ A temperatura dos modelos de chat não estava fixada
+- **Erro:** as respostas dos modelos variavam entre execuções sem necessidade.
+- **Como apareceu:** o proxy aceitou `temperature: 0` em `gpt-5.6-luna` e `gpt-5.6-terra` (testado), e eu não estava enviando.
+- **Solução:** `llm.chat` envia `temperature: 0`. O Jev não aceita o parâmetro, e a variação de confiança dele continua (entrada 17).
+- **Teste:** `test_chat_pede_temperatura_zero_para_respostas_reproduziveis`.
+
+### 29. ✅ A amostra do repositório não trazia o rastreio: as cenas 7 a 9 davam outro resultado e ninguém foi avisado
+- **Erro:** com a amostra de `dados/amostra/` (o que o avaliador usa), a cena 7 (atraso de 8 dias úteis) terminava como "logística acionada" em vez de oferecer reenvio ou reembolso, e as cenas 8 e 9 nem encontravam a conversa. Com a base completa tudo funcionava.
+- **Causa:** a amostra não incluía `rastreio_portais_transportadoras` nem `chamados_transportadora`, e as conversas das cenas 7 a 9 também não estavam lá. Em `rastreio.py`, o `except Exception` devolvia lista vazia sem aviso, então a falta da tabela parecia "pedido sem eventos".
+- **Decisão:** a amostra precisa reproduzir **todas** as cenas da demo; os 174 testes passavam porque rodam contra a base completa ou pulam.
+- **Correção:** `gerar_amostra.py` passou a incluir as conversas AT105718 e AT105041 e as duas tabelas de rastreio. Conferido: as cenas 7, 8 e 9 dão o mesmo desfecho com a amostra e com a base completa.
+- **Aberto:** o `except Exception` em `rastreio.py` continua engolindo falhas de leitura; deveria registrar um aviso.
+
 ---
 
 ## Pendências abertas
-- ⚠️ **Causa das falhas intermitentes do proxy (item 18) não confirmada.** Na próxima ocorrência o aviso mostrará o código HTTP.
-- ⚠️ **Taxa real de discordância da cascata** não medida (só vista em 2 casos reais).
+- ⚠️ **Causa das falhas intermitentes do proxy (item 18) não confirmada.** No lote final (210 conversas) não houve nenhum aviso de falha de modelo, então a causa segue desconhecida.
+- ⚠️ **Discordância da cascata:** 9 de 210 casos (4%) terminaram em "cascata sem consenso" e foram para uma pessoa (lote final). Falta medir quantos desses o humano teria resolvido igual.
+- ⚠️ **Chamado na transportadora (item 23):** precisão 29%, cobertura 35% contra a prática humana. Calibrar em modo sombra.
+- ⚠️ **RAG sem embeddings:** o proxy não tem endpoint de embeddings (404). A busca é lexical (BM25) e não pega sinônimos.
+- ⚠️ **Autônomo é quase só informação:** no lote final, 43% sem humano, mas 93% destes só informam o cliente; 7% executam reenvio.
+- ⚠️ **Camada de canal não construída:** WhatsApp, e-mail e Reclame Aqui recebem o mesmo tratamento. A resposta pública do Reclame Aqui deveria ser rascunho para aprovação.
 - ⚠️ Teste dedicado para o aviso de falha da triagem (item 9).
 - ⚠️ Elegibilidade do brinde (item 12).
 - ⚠️ Pesos do Detetive e limiar do Jev são **heurísticos**, sem calibração estatística.
-- ⚠️ Só 3 sub-agentes implementados (Pós-venda + Detetive, Rastreio, Sensível). Causa raiz, proativo e Reclame Aqui ficam como próximos passos.
+- ⚠️ Só 4 frentes implementadas (Pós-venda + Detetive, Rastreio/Atraso, Dúvida por RAG, Sensível). Causa raiz, proativo e Reclame Aqui ficam como próximos passos.
 - ⚠️ As ferramentas são **simuladas** sobre os CSVs: nenhuma ação altera sistema real.
+- ⚠️ Os modelos `gpt-6-*` (astra, sol, luna) não entraram no benchmark de triagem.
