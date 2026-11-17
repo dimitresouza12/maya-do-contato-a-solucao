@@ -27,7 +27,7 @@ python -m pytest                     # 232 testes com a base completa; só com a
 python codigo/demo.py                # 11 cenas no terminal
 python codigo/app/servidor.py        # monitor local: http://127.0.0.1:8765
 ```
-Python 3.12+. A amostra de dados já está em `dados/amostra/`. Para usar os modelos, copie `.env.example` para `.env` e preencha `AI_PROXY_API_KEY`. **Nunca versione o `.env`.**
+Python 3.12+. A amostra de dados já está em `dados/amostra/`. Os nomes, e-mails, CPFs e telefones dos CSVs são fictícios, das bases do hackathon. Para usar os modelos, copie `.env.example` para `.env` e preencha `AI_PROXY_API_KEY`. **Nunca versione o `.env`.**
 
 O **monitor** mostra as conversas chegando, a Maya respondendo sozinha e, em vermelho, os casos que precisam de uma pessoa (com motivo, contexto e rascunho). A pessoa assume, responde e resolve pela tela. A aba **Feedback** reúne o que a Maya faz bem, onde pode melhorar (cada ponto com a evidência) e as avaliações 👍/👎 dos atendentes.
 
